@@ -11,7 +11,8 @@ let ctaButtons: HTMLAnchorElement[] = []
 
 onMounted(() => {
   // Simple entrance animation
-  const tl = gsap.timeline({ delay: 2.5 }) // Wait for loader
+  // No delay needed as OverlayInterface controls main visibility
+  const tl = gsap.timeline()
   
   tl.from(titleRef.value, {
     y: 50,

@@ -1,14 +1,27 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import HeroSection from './Sections/HeroSection.vue'
 import ProjectsSection from './Sections/ProjectsSection.vue'
 import TechStackSection from './Sections/TechStackSection.vue'
 import ContactSection from './Sections/ContactSection.vue'
 
+gsap.registerPlugin(ScrollTrigger)
+
 const logoRef = ref<HTMLElement | null>(null)
 const navRef = ref<HTMLElement | null>(null)
 const mainRef = ref<HTMLElement | null>(null)
+
+onMounted(() => {
+  // Set initial state for main content
+  if (mainRef.value) {
+    gsap.set(mainRef.value, {
+      opacity: 0,
+      y: 30
+    })
+  }
+})
 
 // Method to start entrance animations
 const playEntrance = () => {
@@ -35,17 +48,23 @@ const playEntrance = () => {
   }
 
   // Animate main content sections
-   if (mainRef.value) {
-     tl.to(mainRef.value, {
-       y: 0,
-       opacity: 1,
-       duration: 1,
-       ease: 'power3.out'
-     }, 0.4)
-   }
- }
+  if (mainRef.value) {
+    tl.to(mainRef.value, {
+      y: 0,
+      opacity: 1,
+      duration: 1,
+      ease: 'power3.out',
+      onComplete: () => {
+        if (mainRef.value) {
+          gsap.set(mainRef.value, { clearProps: 'transform' })
+        }
+        ScrollTrigger.refresh()
+      }
+    }, 0.4)
+  }
+}
 
- defineExpose({ playEntrance })
+defineExpose({ playEntrance })
 </script>
 
 <template>
@@ -59,7 +78,7 @@ const playEntrance = () => {
       </nav>
     </header>
 
-    <main ref="mainRef" class="opacity-0 translate-y-8">
+    <main ref="mainRef">
       <HeroSection />
       <ProjectsSection />
       <TechStackSection />
