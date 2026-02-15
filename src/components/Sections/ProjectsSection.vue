@@ -84,18 +84,18 @@ onMounted(() => {
 
 <template>
   <section ref="sectionRef" id="projects" class="min-h-screen flex flex-col justify-center overflow-hidden py-20 relative">
-    <div class="container mx-auto px-8 mb-8 md:absolute md:top-20 md:left-20 z-20">
+    <div class="container mx-auto px-4 md:px-8 mb-8 md:absolute md:top-20 md:left-20 z-20">
       <h2 class="text-4xl md:text-6xl font-bold mb-2">THE FORGE</h2>
       <p class="text-gray-400">精选项目展示</p>
     </div>
     
-    <div ref="containerRef" class="flex flex-col md:flex-row gap-8 px-8 md:pl-[30vw] w-full md:w-max">
+    <div ref="containerRef" class="flex flex-col md:flex-row gap-8 px-4 md:pl-[30vw] w-full md:w-max">
       <a 
         v-for="(project, index) in projects" 
         :key="index"
         :href="project.link"
         target="_blank"
-        class="project-card group relative w-full md:w-[450px] h-[550px] p-8 border border-white/10 rounded-xl bg-black/40 backdrop-blur-xl hover:bg-white/5 transition-all duration-500 flex flex-col justify-between overflow-hidden"
+        class="project-card group relative w-full md:w-[450px] min-h-[450px] md:h-[550px] p-8 border border-white/10 rounded-xl bg-black/40 backdrop-blur-xl hover:bg-white/5 transition-all duration-500 flex flex-col justify-between overflow-hidden"
       >
         <!-- Hover Glow Effect -->
         <div class="absolute inset-0 bg-gradient-to-br from-noctis-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>

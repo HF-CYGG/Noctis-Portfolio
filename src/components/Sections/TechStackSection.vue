@@ -22,10 +22,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <section id="tech-stack" class="min-h-screen flex flex-col justify-center items-center text-white p-8 relative z-10">
-    <h2 class="text-4xl md:text-6xl font-bold mb-16 tracking-tight">核心技术栈</h2>
+  <section id="tech-stack" class="min-h-screen flex flex-col justify-center items-center text-white p-4 sm:p-8 relative z-10">
+    <h2 class="text-4xl md:text-6xl font-bold mb-16 tracking-tight text-center">核心技术栈</h2>
     
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl w-full">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 max-w-4xl w-full">
       <!-- Frontend/Mobile -->
       <div class="tech-category space-y-4">
         <h3 class="text-sm font-mono text-noctis-accent uppercase tracking-wider mb-6">前端与移动端</h3>

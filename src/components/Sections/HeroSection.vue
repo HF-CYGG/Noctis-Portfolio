@@ -115,22 +115,22 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section id="hero" class="min-h-screen flex flex-col justify-center items-center text-white p-8 relative z-10">
-    <h1 ref="titleRef" class="text-7xl md:text-9xl font-bold mb-6 font-mono tracking-tighter mix-blend-difference">
+  <section id="hero" class="min-h-screen flex flex-col justify-center items-center text-white p-4 sm:p-8 relative z-10">
+    <h1 ref="titleRef" class="text-5xl sm:text-7xl md:text-9xl font-bold mb-6 font-mono tracking-tighter mix-blend-difference text-center">
       YeMiao CATS
     </h1>
-    <p ref="subtitleRef" class="text-xl md:text-2xl text-gray-400 font-light max-w-2xl text-center mb-12 mix-blend-difference">
+    <p ref="subtitleRef" class="text-lg sm:text-xl md:text-2xl text-gray-400 font-light max-w-2xl text-center mb-12 mix-blend-difference px-4">
       代码如诗，<span class="text-noctis-accent">诉说着我们的历程</span>。
     </p>
     
-    <div ref="ctaRef" class="flex gap-4">
-      <a href="#projects" class="px-8 py-3 bg-white text-black font-bold hover:bg-noctis-accent transition-colors rounded-sm">
+    <div ref="ctaRef" class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto items-center">
+      <a href="#projects" class="w-full sm:w-auto px-8 py-3 bg-white text-black font-bold hover:bg-noctis-accent transition-colors rounded-sm text-center">
         项目展示
       </a>
-      <a href="https://github.com/HF-CYGG" target="_blank" class="px-8 py-3 border border-white/20 hover:border-white transition-colors rounded-sm backdrop-blur-sm">
+      <a href="https://github.com/HF-CYGG" target="_blank" class="w-full sm:w-auto px-8 py-3 border border-white/20 hover:border-white transition-colors rounded-sm backdrop-blur-sm text-center">
         GITHUB
       </a>
-      <a href="http://47.105.33.203/" target="_blank" class="px-8 py-3 border border-white/20 hover:border-white transition-colors rounded-sm backdrop-blur-sm">
+      <a href="http://47.105.33.203/" target="_blank" class="w-full sm:w-auto px-8 py-3 border border-white/20 hover:border-white transition-colors rounded-sm backdrop-blur-sm text-center">
         个人博客
       </a>
     </div>
