@@ -6,12 +6,14 @@ import HeroSection from './Sections/HeroSection.vue'
 import ProjectsSection from './Sections/ProjectsSection.vue'
 import TechStackSection from './Sections/TechStackSection.vue'
 import ContactSection from './Sections/ContactSection.vue'
+import DailyQuote from './UI/DailyQuote.vue'
 
 gsap.registerPlugin(ScrollTrigger)
 
 const logoRef = ref<HTMLElement | null>(null)
 const navRef = ref<HTMLElement | null>(null)
 const mainRef = ref<HTMLElement | null>(null)
+const quoteRef = ref<HTMLElement | null>(null)
 
 onMounted(() => {
   // Set initial state for main content
@@ -19,6 +21,14 @@ onMounted(() => {
     gsap.set(mainRef.value, {
       opacity: 0,
       y: 30
+    })
+  }
+
+  // Set initial state for nav links to prevent flash
+  if (navRef.value) {
+    gsap.set(navRef.value.children, {
+      opacity: 0,
+      y: -20
     })
   }
 })
@@ -38,13 +48,22 @@ const playEntrance = () => {
 
   // Animate nav links
   if (navRef.value) {
-    tl.from(navRef.value.children, {
-      y: -20,
-      opacity: 0,
+    tl.to(navRef.value.children, {
+      y: 0,
+      opacity: 1,
       stagger: 0.1,
       duration: 0.8,
       ease: 'power3.out'
     }, 0.2)
+  }
+
+  // Animate quote
+  if (quoteRef.value) {
+    tl.fromTo(quoteRef.value, 
+      { y: -20, opacity: 0 },
+      { y: 0, opacity: 1, duration: 1, ease: 'power3.out' },
+      0.4
+    )
   }
 
   // Animate main content sections
@@ -71,11 +90,18 @@ defineExpose({ playEntrance })
   <div class="relative w-full text-white">
     <header class="fixed top-0 left-0 w-full p-6 z-50 mix-blend-difference flex justify-between items-center">
       <div id="dest-logo" ref="logoRef" class="text-xl font-bold font-mono tracking-tighter opacity-0">NOCTIS</div>
-      <nav ref="navRef" class="hidden md:flex gap-6 text-sm font-medium tracking-wide">
-        <a href="#projects" class="hover:text-gray-300 transition-colors">PROJECTS</a>
-        <a href="#tech-stack" class="hover:text-gray-300 transition-colors">TECH</a>
-        <a href="#contact" class="hover:text-gray-300 transition-colors">CONTACT</a>
-      </nav>
+      
+      <div class="flex items-center gap-8">
+        <nav ref="navRef" class="hidden md:flex gap-6 text-sm font-medium tracking-wide">
+          <a href="#projects" class="hover:text-gray-300 transition-colors">PROJECTS</a>
+          <a href="#tech-stack" class="hover:text-gray-300 transition-colors">TECH</a>
+          <a href="#contact" class="hover:text-gray-300 transition-colors">CONTACT</a>
+        </nav>
+        
+        <div ref="quoteRef" class="hidden sm:block opacity-0">
+           <DailyQuote />
+        </div>
+      </div>
     </header>
 
     <main ref="mainRef">

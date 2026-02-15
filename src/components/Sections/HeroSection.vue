@@ -125,7 +125,7 @@ onUnmounted(() => {
     
     <div ref="subtitleRef" class="mb-12 max-w-2xl">
       <p class="text-xl sm:text-2xl text-gray-300 font-light tracking-wide leading-relaxed">
-        我是 <span class="text-noctis-accent font-medium">HF-CYGG</span>，一名全栈开发者。
+        我是 <span class="text-noctis-accent font-medium">夜喵cats（HF-CYGG）</span>，一名全栈开发者。
         <br class="hidden sm:block" />
         擅长构建沉浸式 Web 体验与高效后端系统。
       </p>

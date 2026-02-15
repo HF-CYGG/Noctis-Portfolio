@@ -29,9 +29,7 @@ onUnmounted(() => {
   <OrbitControls :enable-zoom="false" :enable-pan="false" :auto-rotate="true" :auto-rotate-speed="0.5" />
   <Stars :radius="100" :depth="50" :count="5000" :size="0.1" :size-attenuation="true" />
   
-  <Suspense>
-    <ParticleSphere />
-  </Suspense>
+  <ParticleSphere />
   
   <TresAmbientLight :intensity="1" />
   <TresDirectionalLight :position="[10, 10, 10]" :intensity="1" />

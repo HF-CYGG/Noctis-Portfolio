@@ -72,7 +72,6 @@ function startExitAnimation() {
     
     // Calculate scale and position differences
     const scaleX = destRect.width / startRect.width
-    const scaleY = destRect.height / startRect.height
     // Use the smaller scale to ensure fit, or use width to match text length exactly
     const scale = scaleX 
 
