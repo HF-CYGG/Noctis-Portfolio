@@ -2,26 +2,26 @@
 import HeroSection from './Sections/HeroSection.vue'
 import ProjectsSection from './Sections/ProjectsSection.vue'
 import TechStackSection from './Sections/TechStackSection.vue'
+import ContactSection from './Sections/ContactSection.vue'
 </script>
 
 <template>
-  <div class="overlay-container">
-    <HeroSection id="hero" />
-    <ProjectsSection id="projects" />
-    <TechStackSection id="tech-stack" />
-    <!-- Footer placeholder -->
-    <footer id="contact" class="min-h-[50vh] py-12 flex flex-col items-center justify-center text-white/50 relative z-10">
-      <div class="mb-8 flex flex-col sm:flex-row gap-4 sm:gap-8 items-center">
-        <a href="mailto:yyh1677696627@gmail.com" class="hover:text-noctis-accent transition-colors">邮箱</a>
-        <a href="https://github.com/HF-CYGG" target="_blank" class="hover:text-noctis-accent transition-colors">GitHub</a>
-        <a href="http://47.105.33.203/" target="_blank" class="hover:text-noctis-accent transition-colors">博客</a>
-      </div>
-      <div class="mb-12 flex flex-col gap-4 items-center w-full px-4">
-        <img src="https://github-readme-streak-stats.herokuapp.com/?user=HF-CYGG&theme=transparent&hide_border=true&date_format=M%20j%5B%2C%20Y%5D" alt="GitHub Streak" class="opacity-80 hover:opacity-100 transition-opacity max-w-full w-auto sm:max-w-[400px]" />
-        <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=HF-CYGG&layout=compact&theme=transparent&hide_border=true&title_color=888&text_color=555" alt="Top Langs" class="opacity-80 hover:opacity-100 transition-opacity max-w-full w-auto sm:max-w-[400px]" />
-      </div>
-      <p class="text-center px-4">© 2026 Night Cats (HF-CYGG). 保留所有权利。</p>
-    </footer>
+  <div class="relative w-full text-white">
+    <header class="fixed top-0 left-0 w-full p-6 z-50 mix-blend-difference flex justify-between items-center">
+      <div class="text-xl font-bold tracking-tighter">NOCTIS</div>
+      <nav class="hidden md:flex gap-6 text-sm font-medium tracking-wide">
+        <a href="#projects" class="hover:text-gray-300 transition-colors">PROJECTS</a>
+        <a href="#tech-stack" class="hover:text-gray-300 transition-colors">TECH</a>
+        <a href="#contact" class="hover:text-gray-300 transition-colors">CONTACT</a>
+      </nav>
+    </header>
+
+    <main>
+      <HeroSection />
+      <ProjectsSection />
+      <TechStackSection />
+      <ContactSection />
+    </main>
   </div>
 </template>
 

@@ -115,23 +115,40 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section id="hero" class="min-h-screen flex flex-col justify-center items-center text-white p-4 sm:p-8 relative z-10">
-    <h1 ref="titleRef" class="text-5xl sm:text-7xl md:text-9xl font-bold mb-6 font-mono tracking-tighter mix-blend-difference text-center">
-      YeMiao CATS
-    </h1>
-    <p ref="subtitleRef" class="text-lg sm:text-xl md:text-2xl text-gray-400 font-light max-w-2xl text-center mb-12 mix-blend-difference px-4">
-      代码如诗，<span class="text-noctis-accent">诉说着我们的历程</span>。
-    </p>
+  <section id="hero" class="min-h-screen flex flex-col justify-center px-6 sm:px-12 md:px-24 pt-32 pb-12 relative z-10">
+    <div ref="titleRef" class="mb-4">
+      <h1 class="text-6xl sm:text-8xl md:text-9xl font-bold tracking-tighter leading-none text-white mix-blend-difference">
+        HELLO<br>WORLD
+      </h1>
+    </div>
     
-    <div ref="ctaRef" class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto items-center">
-      <a href="#projects" class="w-full sm:w-auto px-8 py-3 bg-white text-black font-bold hover:bg-noctis-accent transition-colors rounded-sm text-center">
-        项目展示
+    <div ref="subtitleRef" class="mb-12 max-w-2xl">
+      <p class="text-xl sm:text-2xl text-gray-300 font-light tracking-wide leading-relaxed">
+        我是 <span class="text-noctis-accent font-medium">HF-CYGG</span>，一名全栈开发者。
+        <br class="hidden sm:block" />
+        擅长构建沉浸式 Web 体验与高效后端系统。
+      </p>
+    </div>
+    
+    <div ref="ctaRef" class="flex flex-col sm:flex-row gap-4 sm:gap-6 mt-8">
+      <a 
+        href="#projects" 
+        class="group relative px-8 py-3 bg-white text-black font-bold tracking-wider overflow-hidden transition-transform hover:scale-105"
+      >
+        <span class="relative z-10 flex items-center gap-2">
+          查看项目
+          <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+        </span>
+        <div class="absolute inset-0 bg-noctis-accent transform translate-y-full transition-transform duration-300 group-hover:translate-y-0"></div>
       </a>
-      <a href="https://github.com/HF-CYGG" target="_blank" class="w-full sm:w-auto px-8 py-3 border border-white/20 hover:border-white transition-colors rounded-sm backdrop-blur-sm text-center">
-        GITHUB
-      </a>
-      <a href="http://47.105.33.203/" target="_blank" class="w-full sm:w-auto px-8 py-3 border border-white/20 hover:border-white transition-colors rounded-sm backdrop-blur-sm text-center">
-        个人博客
+      
+      <a 
+        href="#contact" 
+        class="group relative px-8 py-3 border border-white/30 text-white font-bold tracking-wider overflow-hidden transition-colors hover:border-white"
+      >
+        <span class="relative z-10">联系我</span>
+        <div class="absolute inset-0 bg-white transform -translate-x-full transition-transform duration-300 group-hover:translate-x-0"></div>
+        <span class="absolute inset-0 flex items-center justify-center text-black font-bold opacity-0 transition-opacity duration-300 group-hover:opacity-100 z-20">联系我</span>
       </a>
     </div>
     

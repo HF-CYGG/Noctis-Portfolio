@@ -84,9 +84,19 @@ onUnmounted(() => {
             </div>
             
             <h3 class="text-3xl font-bold mb-4 group-hover:text-noctis-accent transition-colors">{{ project.title }}</h3>
-            <p class="text-gray-400 leading-relaxed text-sm border-l border-white/10 pl-4 group-hover:border-noctis-accent/50 transition-colors">
-              {{ project.desc }}
-            </p>
+            
+            <div class="mb-4 space-y-2">
+              <div class="flex items-center gap-2 text-xs text-gray-400">
+                <span class="px-2 py-0.5 border border-white/10 rounded-full bg-white/5">{{ project.role }}</span>
+              </div>
+              <p class="text-gray-300 leading-relaxed text-sm border-l-2 border-noctis-accent/30 pl-3">
+                {{ project.desc }}
+              </p>
+              <div class="flex items-start gap-2 text-xs text-gray-500 mt-2">
+                <svg class="w-4 h-4 text-noctis-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>{{ project.result }}</span>
+              </div>
+            </div>
           </div>
           
           <div class="mt-auto">

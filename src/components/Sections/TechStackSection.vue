@@ -58,7 +58,25 @@ const handleMouseLeave = () => {
   relatedProjects.value = []
 }
 
+// 移动端交互
+const handleTouch = (event: Event, techName: string) => {
+  // 阻止默认行为，防止同时触发点击
+  // event.preventDefault() 
+  
+  if (isMobile.value) {
+    handleMouseEnter(event as MouseEvent, techName)
+    // 3秒后自动隐藏
+    setTimeout(() => {
+      handleMouseLeave()
+    }, 3000)
+  }
+}
+
+const isMobile = ref(false)
+
 onMounted(() => {
+  isMobile.value = window.innerWidth < 768
+  
   ctx = gsap.context(() => {
     gsap.from(".tech-item", {
       y: 50,
@@ -102,6 +120,7 @@ onUnmounted(() => {
           class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
           @mouseenter="handleMouseEnter($event, 'Android (Kotlin)')"
           @mouseleave="handleMouseLeave"
+          @click="handleTouch($event, 'Android (Kotlin)')"
         >
           <span class="font-bold">Android (Kotlin)</span>
         </div>
@@ -109,6 +128,7 @@ onUnmounted(() => {
           class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
           @mouseenter="handleMouseEnter($event, 'TypeScript/JS')"
           @mouseleave="handleMouseLeave"
+          @click="handleTouch($event, 'TypeScript/JS')"
         >
           <span class="font-bold">TypeScript/JS</span>
         </div>
@@ -116,6 +136,7 @@ onUnmounted(() => {
           class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
           @mouseenter="handleMouseEnter($event, 'Vue 3')"
           @mouseleave="handleMouseLeave"
+          @click="handleTouch($event, 'Vue 3')"
         >
           <span class="font-bold">Vue 3</span>
         </div>
@@ -128,6 +149,7 @@ onUnmounted(() => {
           class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
           @mouseenter="handleMouseEnter($event, 'Python')"
           @mouseleave="handleMouseLeave"
+          @click="handleTouch($event, 'Python')"
         >
           <span class="font-bold">Python</span>
         </div>
@@ -135,6 +157,7 @@ onUnmounted(() => {
           class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
           @mouseenter="handleMouseEnter($event, 'Java')"
           @mouseleave="handleMouseLeave"
+          @click="handleTouch($event, 'Java')"
         >
           <span class="font-bold">Java</span>
         </div>
@@ -142,6 +165,7 @@ onUnmounted(() => {
           class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
           @mouseenter="handleMouseEnter($event, 'Rust (探索中)')"
           @mouseleave="handleMouseLeave"
+          @click="handleTouch($event, 'Rust (探索中)')"
         >
           <span class="font-bold">Rust (探索中)</span>
         </div>
@@ -149,6 +173,7 @@ onUnmounted(() => {
           class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
           @mouseenter="handleMouseEnter($event, 'Go (探索中)')"
           @mouseleave="handleMouseLeave"
+          @click="handleTouch($event, 'Go (探索中)')"
         >
           <span class="font-bold">Go (探索中)</span>
         </div>
@@ -161,6 +186,7 @@ onUnmounted(() => {
           class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
           @mouseenter="handleMouseEnter($event, 'Docker')"
           @mouseleave="handleMouseLeave"
+          @click="handleTouch($event, 'Docker')"
         >
           <span class="font-bold">Docker</span>
         </div>
@@ -168,6 +194,7 @@ onUnmounted(() => {
           class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
           @mouseenter="handleMouseEnter($event, 'Linux')"
           @mouseleave="handleMouseLeave"
+          @click="handleTouch($event, 'Linux')"
         >
           <span class="font-bold">Linux</span>
         </div>
@@ -175,6 +202,7 @@ onUnmounted(() => {
           class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
           @mouseenter="handleMouseEnter($event, 'Git')"
           @mouseleave="handleMouseLeave"
+          @click="handleTouch($event, 'Git')"
         >
           <span class="font-bold">Git</span>
         </div>
