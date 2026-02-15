@@ -139,40 +139,47 @@ onMounted(() => {
   setTimeout(() => {
     if (!pointsRef.value) return
     
-    // Scroll interaction: Disperse/Scale down when scrolling to Projects
-    // Move the sphere away
-    gsap.to(pointsRef.value.position, {
-      y: 2,
-      z: -5,
-      scrollTrigger: {
-        trigger: '#hero',
-        start: 'top top',
-        end: 'bottom top',
-        scrub: 1,
-      }
+    // Create GSAP context for cleanup
+    const ctx = gsap.context(() => {
+      // Scroll interaction: Disperse/Scale down when scrolling to Projects
+      // Move the sphere away
+      gsap.to(pointsRef.value!.position, {
+        y: 2,
+        z: -5,
+        scrollTrigger: {
+          trigger: '#hero',
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 1,
+        }
+      })
+
+      gsap.to(pointsRef.value!.scale, {
+        x: 0.5, 
+        y: 0.5,
+        z: 0.5,
+        scrollTrigger: {
+          trigger: '#hero',
+          start: 'center top',
+          end: 'bottom top',
+          scrub: 1,
+        }
+      })
+
+      gsap.to(pointsRef.value!.material, {
+        opacity: 0,
+        scrollTrigger: {
+          trigger: '#hero',
+          start: 'center center',
+          end: 'bottom top',
+          scrub: 1,
+        }
+      })
     })
 
-    gsap.to(pointsRef.value.scale, {
-      x: 0.5, 
-      y: 0.5,
-      z: 0.5,
-      opacity: 0,
-      scrollTrigger: {
-        trigger: '#hero',
-        start: 'center top',
-        end: 'bottom top',
-        scrub: 1,
-      }
-    })
-
-    gsap.to(pointsRef.value.material, {
-      opacity: 0,
-      scrollTrigger: {
-        trigger: '#hero',
-        start: 'center center',
-        end: 'bottom top',
-        scrub: 1,
-      }
+    // Store cleanup function
+    onUnmounted(() => {
+      ctx.revert()
     })
   }, 100)
 })
@@ -180,6 +187,10 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('pointermove', handlePointerMove)
   window.removeEventListener('pointerdown', handlePointerDown)
+  
+  // Dispose resources
+  geometry.dispose()
+  material.dispose()
 })
 </script>
 

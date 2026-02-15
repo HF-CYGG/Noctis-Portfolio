@@ -1,23 +1,31 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
+let ctx: gsap.Context | null = null
+
 onMounted(() => {
-  gsap.from(".tech-item", {
-    y: 50,
-    opacity: 0,
-    stagger: 0.1,
-    duration: 0.8,
-    scrollTrigger: {
-      trigger: "#tech-stack",
-      start: "top center",
-      end: "bottom bottom",
-      toggleActions: "play none none reverse"
-    }
+  ctx = gsap.context(() => {
+    gsap.from(".tech-item", {
+      y: 50,
+      opacity: 0,
+      stagger: 0.1,
+      duration: 0.8,
+      scrollTrigger: {
+        trigger: "#tech-stack",
+        start: "top center",
+        end: "bottom bottom",
+        toggleActions: "play none none reverse"
+      }
+    })
   })
+})
+
+onUnmounted(() => {
+  ctx?.revert()
 })
 </script>
 
