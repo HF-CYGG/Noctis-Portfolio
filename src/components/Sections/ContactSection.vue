@@ -35,7 +35,7 @@ const copyEmail = async () => {
             <svg v-else class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
             
             <span class="font-mono text-sm tracking-wide">
-              {{ copied ? '已复制邮箱' : 'hf_cygg@163.com' }}
+              {{ copied ? '已复制邮箱' : 'yyh1677696627@outlook.com' }}
             </span>
           </div>
         </button>

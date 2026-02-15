@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { TresCanvas } from '@tresjs/core'
 import TheExperience from './components/TheExperience.vue'
 import OverlayInterface from './components/OverlayInterface.vue'
@@ -8,6 +8,7 @@ import Lenis from 'lenis'
 
 const isAppLoaded = ref(false)
 const showLoading = ref(true)
+const overlayRef = ref<InstanceType<typeof OverlayInterface> | null>(null)
 
 onMounted(() => {
   const lenis = new Lenis()
@@ -24,6 +25,10 @@ onMounted(() => {
 
 function onLoadingFinished() {
   showLoading.value = false
+  // Trigger entrance animation after loading screen is removed
+  nextTick(() => {
+    overlayRef.value?.playEntrance()
+  })
 }
 </script>
 
@@ -42,7 +47,7 @@ function onLoadingFinished() {
 
     <!-- 层级 2: HTML 内容 (z-index: 10) -->
     <main class="content-layer">
-      <OverlayInterface />
+      <OverlayInterface ref="overlayRef" />
     </main>
   </div>
 </template>
