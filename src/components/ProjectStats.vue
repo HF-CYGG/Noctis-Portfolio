@@ -14,11 +14,23 @@ interface CommitInfo {
   htmlUrl: string
 }
 
+interface CachedData {
+  timestamp: number
+  data: {
+    latestCommit: CommitInfo
+    commitActivity: number[]
+    totalCommits: number | string
+  }
+}
+
 const loading = ref(true)
 const error = ref(false)
 const latestCommit = ref<CommitInfo | null>(null)
 const commitActivity = ref<number[]>([])
 const totalCommits = ref<number | string>('-')
+
+const CACHE_PREFIX = 'noctis_gh_stats_'
+const CACHE_TTL = 60 * 60 * 1000 // 1 hour
 
 const getRepoPath = (url: string) => {
   try {
@@ -48,10 +60,10 @@ const sparklinePath = computed(() => {
   const data = commitActivity.value
   const width = 100
   const height = 30
-  const max = Math.max(...data, 1) // Prevent division by zero
-  const step = width / (data.length - 1)
+  const max = Math.max(...data, 1) // 防止除以零
+  const step = width / Math.max(data.length - 1, 1)
   
-  // Build path
+  // 构建路径
   let path = `M 0 ${height - ((data[0] || 0) / max) * height}`
   
   for (let i = 1; i < data.length; i++) {
@@ -63,6 +75,40 @@ const sparklinePath = computed(() => {
   return path
 })
 
+const loadFromCache = (repoPath: string): boolean => {
+  try {
+    const cached = localStorage.getItem(CACHE_PREFIX + repoPath)
+    if (!cached) return false
+    
+    const parsed: CachedData = JSON.parse(cached)
+    if (Date.now() - parsed.timestamp > CACHE_TTL) {
+      localStorage.removeItem(CACHE_PREFIX + repoPath)
+      return false
+    }
+    
+    latestCommit.value = parsed.data.latestCommit
+    commitActivity.value = parsed.data.commitActivity
+    totalCommits.value = parsed.data.totalCommits
+    return true
+  } catch (e) {
+    return false
+  }
+}
+
+const saveToCache = (repoPath: string) => {
+  if (!latestCommit.value) return
+  
+  const cacheData: CachedData = {
+    timestamp: Date.now(),
+    data: {
+      latestCommit: latestCommit.value,
+      commitActivity: commitActivity.value,
+      totalCommits: totalCommits.value
+    }
+  }
+  localStorage.setItem(CACHE_PREFIX + repoPath, JSON.stringify(cacheData))
+}
+
 onMounted(async () => {
   const repoPath = getRepoPath(props.repoUrl)
   if (!repoPath) {
@@ -71,9 +117,23 @@ onMounted(async () => {
     return
   }
 
+  // 尝试读取缓存
+  if (loadFromCache(repoPath)) {
+    loading.value = false
+    // 可以在后台更新缓存，但为了避免速率限制，这里仅使用缓存
+    return
+  }
+
   try {
-    // 1. Fetch latest commit
+    // 1. 获取最新提交
     const commitRes = await fetch(`https://api.github.com/repos/${repoPath}/commits?per_page=1`)
+    
+    // 专门处理速率限制
+    if (commitRes.status === 403 || commitRes.status === 429) {
+      console.warn('GitHub API Rate Limit Exceeded')
+      throw new Error('Rate Limit')
+    }
+    
     if (!commitRes.ok) throw new Error('Failed to fetch commits')
     
     const commitData = await commitRes.json()
@@ -88,7 +148,7 @@ onMounted(async () => {
         htmlUrl: c.html_url
       }
       
-      // Try to get total commits from Link header
+      // 尝试从 Link header 获取提交总数
       const linkHeader = commitRes.headers.get('Link')
       if (linkHeader) {
         const match = linkHeader.match(/&page=(\d+)>; rel="last"/)
@@ -98,20 +158,17 @@ onMounted(async () => {
       }
     }
 
-    // 2. Fetch participation stats for sparkline
+    // 2. 获取参与度统计
     const statsRes = await fetch(`https://api.github.com/repos/${repoPath}/stats/participation`)
     if (statsRes.ok) {
       const statsData = await statsRes.json()
-      // Use last 12 weeks of data
+      // 使用最近 12 周的数据
       if (statsData.all) {
         commitActivity.value = statsData.all.slice(-12)
-        // If totalCommits is still '-', we can sum participation (though it's only last year)
-        if (totalCommits.value === '-') {
-           // This is just a fallback for recent activity count if total is unknown
-           // totalCommits.value = statsData.all.reduce((a: number, b: number) => a + b, 0)
-        }
       }
     }
+
+    saveToCache(repoPath)
 
   } catch (e) {
     console.error('GitHub API Error:', e)

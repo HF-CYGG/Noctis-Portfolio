@@ -9,7 +9,7 @@ gsap.registerPlugin(ScrollTrigger)
 
 const sectionRef = ref<HTMLElement | null>(null)
 const containerRef = ref<HTMLDivElement | null>(null)
-let ctx: gsap.Context | null = null
+let mm: gsap.MatchMedia
 
 onMounted(() => {
   // Horizontal scroll animation
@@ -18,49 +18,41 @@ onMounted(() => {
   
   if (!container || !section) return
 
-  ctx = gsap.context(() => {
-    // Calculate total width to scroll
-    // We want to pin the section and scroll the container horizontally
+  mm = gsap.matchMedia()
+
+  mm.add("(min-width: 768px)", () => {
+    const horizontalTween = gsap.to(container, {
+      x: () => -(container.scrollWidth - window.innerWidth + 100),
+      ease: "none",
+      scrollTrigger: {
+        trigger: section,
+        pin: true,
+        scrub: 1,
+        start: "top top",
+        end: () => "+=" + container.scrollWidth,
+        invalidateOnRefresh: true
+      }
+    })
     
-    // Note: On mobile, maybe just vertical scroll?
-    // Let's do horizontal for desktop, vertical stack for mobile
-    
-    const mm = gsap.matchMedia()
-    
-    mm.add("(min-width: 768px)", () => {
-      const horizontalTween = gsap.to(container, {
-        x: () => -(container.scrollWidth - window.innerWidth + 100),
-        ease: "none",
+    // 卡片的视差/倾斜效果
+    const cards = gsap.utils.toArray<HTMLElement>('.project-card')
+    cards.forEach((card) => {
+      gsap.to(card, {
+        rotationY: 10,
         scrollTrigger: {
-          trigger: section,
-          pin: true,
-          scrub: 1,
-          start: "top top",
-          end: () => "+=" + container.scrollWidth,
-          invalidateOnRefresh: true
+          trigger: card,
+          start: "left center",
+          end: "right center",
+          scrub: true,
+          containerAnimation: horizontalTween
         }
-      })
-      
-      // Parallax/Tilt effect for cards
-      const cards = gsap.utils.toArray<HTMLElement>('.project-card')
-      cards.forEach((card) => {
-        gsap.to(card, {
-          rotationY: 10,
-          scrollTrigger: {
-            trigger: card,
-            start: "left center",
-            end: "right center",
-            scrub: true,
-            containerAnimation: horizontalTween
-          }
-        })
       })
     })
   })
 })
 
 onUnmounted(() => {
-  ctx?.revert()
+  mm?.revert()
 })
 </script>
 
