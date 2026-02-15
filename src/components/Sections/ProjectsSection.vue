@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import ProjectStats from '../ProjectStats.vue'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -135,6 +136,9 @@ onUnmounted(() => {
                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
                </svg>
              </div>
+             
+             <!-- GitHub Stats -->
+             <ProjectStats :repo-url="project.link" />
           </div>
         </div>
       </a>
