@@ -1,21 +1,32 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+// 移除同步引入的 gsap
+// import { gsap } from 'gsap'
+// import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import HeroSection from './Sections/HeroSection.vue'
 import ProjectsSection from './Sections/ProjectsSection.vue'
 import TechStackSection from './Sections/TechStackSection.vue'
 import ContactSection from './Sections/ContactSection.vue'
 import DailyQuote from './UI/DailyQuote.vue'
 
-gsap.registerPlugin(ScrollTrigger)
+// gsap.registerPlugin(ScrollTrigger)
 
 const logoRef = ref<HTMLElement | null>(null)
 const navRef = ref<HTMLElement | null>(null)
 const mainRef = ref<HTMLElement | null>(null)
 const quoteRef = ref<HTMLElement | null>(null)
 
-onMounted(() => {
+// 动态加载 GSAP
+const loadGsap = async () => {
+  const gsap = (await import('gsap')).gsap
+  const ScrollTrigger = (await import('gsap/ScrollTrigger')).ScrollTrigger
+  gsap.registerPlugin(ScrollTrigger)
+  return { gsap, ScrollTrigger }
+}
+
+onMounted(async () => {
+  const { gsap } = await loadGsap()
+  
   // Set initial state for main content
   if (mainRef.value) {
     gsap.set(mainRef.value, {
@@ -34,7 +45,8 @@ onMounted(() => {
 })
 
 // Method to start entrance animations
-const playEntrance = () => {
+const playEntrance = async () => {
+  const { gsap, ScrollTrigger } = await loadGsap()
   const tl = gsap.timeline()
   
   // Fade in logo (instant or very fast to match loader exit)

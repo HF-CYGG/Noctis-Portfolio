@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
-import { OrbitControls, Stars } from '@tresjs/cientos'
 import { usePerformance } from '../composables/usePerformance'
+
+// 异步加载 Tres 组件，确保它们不进入主包
+// 这里使用 defineAsyncComponent 配合 import() 语法
+const OrbitControls = defineAsyncComponent(() => 
+  import('@tresjs/cientos').then(m => m.OrbitControls)
+)
+const Stars = defineAsyncComponent(() => 
+  import('@tresjs/cientos').then(m => m.Stars)
+)
 
 // 异步加载 3D 核心组件，避免阻塞首屏 JS
 const ParticleSphere = defineAsyncComponent(() => import('./ParticleSphere.vue'))

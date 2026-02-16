@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+// import { gsap } from 'gsap'
+// import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import ProjectStats from '../ProjectStats.vue'
 import { projects } from '../../data/projects'
+import { usePerformance } from '../../composables/usePerformance'
 
-gsap.registerPlugin(ScrollTrigger)
+// gsap.registerPlugin(ScrollTrigger)
 
+const { trackInteraction } = usePerformance()
 const sectionRef = ref<HTMLElement | null>(null)
 const containerRef = ref<HTMLDivElement | null>(null)
-let mm: gsap.MatchMedia
+// let mm: gsap.MatchMedia
+let mm: any // 使用 any 规避类型检查，因为 gsap 是动态加载的
 
 const isMobile = ref(false)
 const activeCardIndex = ref<number | null>(null)
@@ -20,54 +23,70 @@ const toggleCard = (index: number) => {
     activeCardIndex.value = null
   } else {
     activeCardIndex.value = index
+    const project = projects[index]
+    if (project) {
+      trackInteraction('project_card_expand', project.title)
+    }
   }
 }
 
-onMounted(() => {
+const trackProjectLink = (type: string, title: string) => {
+  trackInteraction(`project_link_${type}`, title)
+}
+
+onMounted(async () => {
   isMobile.value = window.innerWidth < 768
   
   // 横向滚动动画
   // 使用 gsap.context 确保动画和 ScrollTrigger 实例在组件卸载时能被正确清理
   // 这对于防止内存泄漏和路由切换时的动画错位至关重要
+  const gsap = (await import('gsap')).gsap
   mm = gsap.matchMedia()
 
-  // 仅在非移动端 (>= 768px) 启用复杂的横向滚动动画
-  mm.add("(min-width: 768px)", () => {
-    // 0. 获取元素并检查
-    const container = containerRef.value
-    const section = sectionRef.value
-    
-    if (!container || !section) return
+  // 仅在非移动端 (>= 768px) 且非 reduced-motion 启用复杂的横向滚动动画
+  if (!isMobile.value && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    mm.add("(min-width: 768px)", async () => {
+      // 动态导入 GSAP
+      const gsap = (await import('gsap')).gsap
+      const ScrollTrigger = (await import('gsap/ScrollTrigger')).ScrollTrigger
+      gsap.registerPlugin(ScrollTrigger)
 
-    // 1. 容器横向滚动逻辑
-    const horizontalTween = gsap.to(container, {
-      x: () => -(container.scrollWidth - window.innerWidth + 200), // 计算滚动距离
-      ease: "none",
-      scrollTrigger: {
-        trigger: section,
-        pin: true,     // 固定父容器
-        scrub: 1,      // 平滑滚动效果 (1s 延迟)
-        start: "top top",
-        end: () => "+=" + container.scrollWidth, // 滚动长度等于容器内容宽度
-        invalidateOnRefresh: true // 窗口调整大小时重新计算
-      }
-    })
-    
-    // 2. 卡片的视差与倾斜效果
-    const cards = gsap.utils.toArray<HTMLElement>('.project-card')
-    cards.forEach((card) => {
-      gsap.to(card, {
-        rotationY: 10,
+      // 0. 获取元素并检查
+      const container = containerRef.value
+      const section = sectionRef.value
+      
+      if (!container || !section) return
+
+      // 1. 容器横向滚动逻辑
+      const horizontalTween = gsap.to(container, {
+        x: () => -(container.scrollWidth - window.innerWidth + 200), // 计算滚动距离
+        ease: "none",
         scrollTrigger: {
-          trigger: card,
-          start: "left center",
-          end: "right center",
-          scrub: true,
-          containerAnimation: horizontalTween // 链接到横向滚动动画
+          trigger: section,
+          pin: true,     // 固定父容器
+          scrub: 1,      // 平滑滚动效果 (1s 延迟)
+          start: "top top",
+          end: () => "+=" + container.scrollWidth, // 滚动长度等于容器内容宽度
+          invalidateOnRefresh: true // 窗口调整大小时重新计算
         }
       })
+      
+      // 2. 卡片的视差与倾斜效果
+      const cards = gsap.utils.toArray<HTMLElement>('.project-card')
+      cards.forEach((card) => {
+        gsap.to(card, {
+          rotationY: 10,
+          scrollTrigger: {
+            trigger: card,
+            start: "left center",
+            end: "right center",
+            scrub: true,
+            containerAnimation: horizontalTween // 链接到横向滚动动画
+          }
+        })
+      })
     })
-  })
+  }
 })
 
 onUnmounted(() => {
@@ -172,6 +191,7 @@ onUnmounted(() => {
                  :href="project.links.repo"
                  target="_blank"
                  class="px-2 py-1 border border-white/10 rounded text-gray-300 hover:text-white hover:border-white/30 transition-colors"
+                 @click="trackProjectLink('repo', project.title)"
                >
                  Repo
                </a>
@@ -180,6 +200,7 @@ onUnmounted(() => {
                  :href="project.links.demo"
                  target="_blank"
                  class="px-2 py-1 border border-white/10 rounded text-gray-300 hover:text-white hover:border-white/30 transition-colors"
+                 @click="trackProjectLink('demo', project.title)"
                >
                  Demo
                </a>
@@ -188,6 +209,7 @@ onUnmounted(() => {
                  :href="project.links.docs"
                  target="_blank"
                  class="px-2 py-1 border border-white/10 rounded text-gray-300 hover:text-white hover:border-white/30 transition-colors"
+                 @click="trackProjectLink('docs', project.title)"
                >
                  文档
                </a>

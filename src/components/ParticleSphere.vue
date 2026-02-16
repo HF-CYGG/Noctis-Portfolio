@@ -2,11 +2,11 @@
 import { shallowRef, onMounted, onUnmounted, watch } from 'vue'
 import { useLoop } from '@tresjs/core'
 import { BufferGeometry, Float32BufferAttribute, PointsMaterial, AdditiveBlending, Points } from 'three'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+// import { gsap } from 'gsap'
+// import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { usePerformance } from '../composables/usePerformance'
 
-gsap.registerPlugin(ScrollTrigger)
+// gsap.registerPlugin(ScrollTrigger)
 
 const props = defineProps<{
   startAnimation: boolean
@@ -27,7 +27,7 @@ let durations: Float32Array | null = null
 let startTime = 0
 let isConverged = false
 
-let ctx: gsap.Context | null = null
+let ctx: any = null // gsap.Context
 
 // 动画循环相关变量
 let pointerX = 0
@@ -48,9 +48,11 @@ const handlePointerMove = (e: PointerEvent) => {
   pointerY = nextY
 }
 
-const handlePointerDown = () => {
+const handlePointerDown = async () => {
   if (!pointsRef.value || !materialRef.value) return
   
+  const gsap = (await import('gsap')).gsap
+
   gsap.to(pointsRef.value.scale, {
     x: 1.2,
     y: 1.2,
@@ -162,9 +164,14 @@ const initResources = () => {
 }
 
 // 初始化动画
-const initAnimations = () => {
+const initAnimations = async () => {
   if (!pointsRef.value || !materialRef.value) return
   
+  // 动态导入 GSAP
+  const gsap = (await import('gsap')).gsap
+  const ScrollTrigger = (await import('gsap/ScrollTrigger')).ScrollTrigger
+  gsap.registerPlugin(ScrollTrigger)
+
   // 清理旧的 context
   if (ctx) ctx.revert()
   

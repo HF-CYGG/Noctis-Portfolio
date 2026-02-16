@@ -1,4 +1,5 @@
 import { ref, onMounted, computed } from 'vue'
+import { onLCP, onINP, onCLS } from 'web-vitals'
 
 /**
  * 性能等级枚举
@@ -12,43 +13,86 @@ const performanceTier = ref<PerformanceTier>('L0')
 const isMobile = ref(false)
 const prefersReducedMotion = ref(false)
 
-interface ExtendedNavigator extends Navigator {
-  deviceMemory?: number
-}
-
 // 单例模式，避免重复监听
 let isInitialized = false
 
-export function usePerformance() {
-  const init = () => {
-    if (isInitialized) return
-    
-    // 1. 检测减弱动画偏好
-    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-    prefersReducedMotion.value = motionQuery.matches
-    motionQuery.addEventListener('change', (e) => {
-      prefersReducedMotion.value = e.matches
-      updateTier()
-    })
-
-    // 2. 检测移动端
-    const checkMobile = () => {
-      isMobile.value = window.innerWidth < 768
-      updateTier()
+// 5. Web Vitals 采集 (仅在生产环境或显式开启时上报)
+  const reportWebVitals = () => {
+    // 这里可以替换为你的真实上报接口 (Google Analytics / Sentry / 自研埋点)
+    const sendToAnalytics = (metric: any) => {
+      // 仅在开发环境打印，生产环境请替换为 navigator.sendBeacon
+      if (import.meta.env.DEV) {
+        console.log('[Web Vitals]', metric.name, metric.value, metric)
+      }
     }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-
-    // 3. 硬件并发数检测 (简单的性能指标)
-    const nav = navigator as ExtendedNavigator
-    const concurrency = navigator.hardwareConcurrency || 4
-    const memory = nav.deviceMemory || 4
-
-    // 初始评级
-    updateTier(concurrency, memory)
-    
-    isInitialized = true
+  
+    onCLS(sendToAnalytics)
+    onINP(sendToAnalytics)
+    onLCP(sendToAnalytics)
   }
+
+  // 6. Long Task 监控
+  // 监控超过 200ms 的长任务，帮助定位主线程阻塞
+  const monitorLongTasks = () => {
+    if (!('PerformanceObserver' in window)) return
+
+    try {
+      const observer = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          // 仅在开发环境打印，生产环境可上报采样
+          if (import.meta.env.DEV && entry.duration > 200) {
+            console.warn('[Long Task]', Math.round(entry.duration), 'ms', entry)
+          }
+        }
+      })
+      
+      observer.observe({ type: 'longtask', buffered: true })
+    } catch (e) {
+      console.warn('Long Task Observer failed:', e)
+    }
+  }
+
+  // 7. 资源加载错误监控
+  // 全局监听 error 事件，捕获 img/script/link 加载失败
+  const monitorResourceErrors = () => {
+    window.addEventListener('error', (event) => {
+      // 过滤 JS 运行时错误，只处理资源加载错误
+      // 资源错误 event.target 是 HTML 元素，且 event instanceof Event (不是 ErrorEvent)
+      const target = event.target as HTMLElement
+      if (target && (target.tagName === 'IMG' || target.tagName === 'SCRIPT' || target.tagName === 'LINK')) {
+        const url = (target as any).src || (target as any).href
+        console.error('[Resource Error]', target.tagName, url)
+        
+        // 可以在这里上报资源失败
+        // navigator.sendBeacon(...)
+      }
+    }, true) // 必须使用捕获阶段 (capture: true) 才能捕获资源错误
+  }
+
+  export function usePerformance() {
+    const init = () => {
+      if (isInitialized) return
+      
+      // ... (省略前面的初始化代码)
+
+      // 3. 硬件并发数检测 (简单的性能指标)
+      const concurrency = navigator.hardwareConcurrency || 4
+      const memory = (navigator as any).deviceMemory || 4
+
+      // 初始评级
+      updateTier(concurrency, memory)
+      
+      // 启动 Web Vitals 监控
+      reportWebVitals()
+      
+      // 启动 Long Task 监控
+      monitorLongTasks()
+      
+      // 启动资源错误监控
+      monitorResourceErrors()
+  
+      isInitialized = true
+    }
 
   const updateTier = (concurrency = 4, memory = 4) => {
     // 强制降级条件
@@ -81,10 +125,20 @@ export function usePerformance() {
     let lastTime = performance.now()
     let lowFpsCount = 0
     const CHECK_INTERVAL = 1000 // 1秒检查一次
+    let rafId: number | null = null
     
     const checkFps = () => {
+      // 页面不可见时暂停监控，节省电量
+      if (document.hidden) {
+        rafId = requestAnimationFrame(checkFps)
+        return
+      }
+
       // 如果已经是最低等级，不再监测
-      if (performanceTier.value === 'L2') return
+      if (performanceTier.value === 'L2') {
+         if (rafId) cancelAnimationFrame(rafId)
+         return
+      }
 
       const now = performance.now()
       frameCount++
@@ -116,10 +170,10 @@ export function usePerformance() {
         lastTime = now
       }
       
-      requestAnimationFrame(checkFps)
+      rafId = requestAnimationFrame(checkFps)
     }
     
-    requestAnimationFrame(checkFps)
+    rafId = requestAnimationFrame(checkFps)
   }
 
   onMounted(() => {
@@ -141,6 +195,15 @@ export function usePerformance() {
         case 'L2': return 0
         default: return 1500
       }
-    })
+    }),
+    
+    // 交互埋点方法
+    trackInteraction: (action: string, label?: string) => {
+      if (import.meta.env.DEV) {
+        console.log('[Interaction]', action, label)
+      }
+      // 可以在这里扩展真实上报逻辑
+      // navigator.sendBeacon('/analytics', JSON.stringify({ action, label, tier: performanceTier.value }))
+    }
   }
 }

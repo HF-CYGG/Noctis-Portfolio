@@ -15,5 +15,29 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('three')) {
+              return 'vendor-three'
+            }
+            if (id.includes('@tresjs')) {
+              return 'vendor-tres'
+            }
+            if (id.includes('gsap')) {
+              return 'vendor-gsap'
+            }
+            if (id.includes('vue') || id.includes('@vue')) {
+              return 'vendor-vue'
+            }
+          }
+        }
+      }
+    },
+    // 调高警告阈值，因为我们已经手动拆包了
+    chunkSizeWarningLimit: 600
   }
 })
