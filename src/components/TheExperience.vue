@@ -6,6 +6,10 @@ import { usePerformance } from '../composables/usePerformance'
 // 异步加载 3D 核心组件，避免阻塞首屏 JS
 const ParticleSphere = defineAsyncComponent(() => import('./ParticleSphere.vue'))
 
+defineProps<{
+  isReady: boolean
+}>()
+
 const { shouldEnable3D, particleCount } = usePerformance()
 
 const cameraPosition = ref<[number, number, number]>([0, 0, 5])
@@ -37,7 +41,7 @@ onUnmounted(() => {
     <Stars :radius="100" :depth="50" :count="particleCount > 2000 ? 5000 : 2000" :size="0.1" :size-attenuation="true" />
     
     <Suspense>
-      <ParticleSphere />
+      <ParticleSphere :start-animation="isReady" />
     </Suspense>
   </template>
   

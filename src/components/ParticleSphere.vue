@@ -8,12 +8,24 @@ import { usePerformance } from '../composables/usePerformance'
 
 gsap.registerPlugin(ScrollTrigger)
 
+const props = defineProps<{
+  startAnimation: boolean
+}>()
+
 const pointsRef = shallowRef<Points | null>(null)
 // 使用 shallowRef 管理 Three.js 对象，确保正确响应和销毁
 const geometryRef = shallowRef<BufferGeometry | null>(null)
 const materialRef = shallowRef<PointsMaterial | null>(null)
 
 const { particleCount, shouldEnable3D } = usePerformance()
+
+// 粒子汇聚动画相关数据
+let targetPositions: Float32Array | null = null
+let startPositions: Float32Array | null = null
+let delays: Float32Array | null = null
+let durations: Float32Array | null = null
+let startTime = 0
+let isConverged = false
 
 let ctx: gsap.Context | null = null
 
@@ -66,19 +78,49 @@ const initResources = () => {
   const count = particleCount.value
   const positions = new Float32Array(count * 3)
   const colors = new Float32Array(count * 3)
+  
+  // 初始化动画数据
+  targetPositions = new Float32Array(count * 3)
+  startPositions = new Float32Array(count * 3)
+  delays = new Float32Array(count)
+  durations = new Float32Array(count)
+  startTime = 0 // 重置计时器
+  isConverged = false
 
   for (let i = 0; i < count; i++) {
+    // 1. 计算目标位置（球体）
     const r = 1.5 // 半径
     const theta = 2 * Math.PI * Math.random()
     const phi = Math.acos(2 * Math.random() - 1)
     
-    const x = r * Math.sin(phi) * Math.cos(theta)
-    const y = r * Math.sin(phi) * Math.sin(theta)
-    const z = r * Math.cos(phi)
+    const targetX = r * Math.sin(phi) * Math.cos(theta)
+    const targetY = r * Math.sin(phi) * Math.sin(theta)
+    const targetZ = r * Math.cos(phi)
 
-    positions[i * 3] = x
-    positions[i * 3 + 1] = y
-    positions[i * 3 + 2] = z
+    // 存储目标位置
+    targetPositions[i * 3] = targetX
+    targetPositions[i * 3 + 1] = targetY
+    targetPositions[i * 3 + 2] = targetZ
+
+    // 2. 计算起始位置（随机扩散）
+    // 范围是目标半径的 3-6 倍，制造从远处汇聚的效果
+    const startR = r * (3 + Math.random() * 3)
+    const startTheta = 2 * Math.PI * Math.random()
+    const startPhi = Math.acos(2 * Math.random() - 1)
+
+    startPositions[i * 3] = startR * Math.sin(startPhi) * Math.cos(startTheta)
+    startPositions[i * 3 + 1] = startR * Math.sin(startPhi) * Math.sin(startTheta)
+    startPositions[i * 3 + 2] = startR * Math.cos(startPhi)
+
+    // 3. 设置初始位置为起始位置
+    positions[i * 3] = startPositions[i * 3]!
+    positions[i * 3 + 1] = startPositions[i * 3 + 1]!
+    positions[i * 3 + 2] = startPositions[i * 3 + 2]!
+
+    // 4. 设置动画参数
+    // 延迟 0-1.5秒，持续 1-2秒
+    delays[i] = Math.random() * 1.5
+    durations[i] = 1.0 + Math.random() * 1.0
 
     // 赛博朋克配色
     const mix = Math.random()
@@ -165,6 +207,56 @@ const initAnimations = () => {
 
 onBeforeRender(({ elapsed }) => {
   if (pointsRef.value && materialRef.value) {
+    // 汇聚动画逻辑
+    if (props.startAnimation && !isConverged && targetPositions && startPositions && delays && durations && geometryRef.value && geometryRef.value.attributes.position) {
+      if (startTime === 0) startTime = elapsed // 初始化开始时间
+
+      const localTime = elapsed - startTime
+      const positions = geometryRef.value.attributes.position.array as Float32Array
+      const count = particleCount.value
+      let allFinished = true
+
+      // 缓存引用以通过类型检查
+      const _delays = delays
+      const _durations = durations
+      const _startPositions = startPositions
+      const _targetPositions = targetPositions
+
+      for (let i = 0; i < count; i++) {
+        const delay = _delays[i]!
+        const duration = _durations[i]!
+        
+        if (localTime < delay) {
+            // 还没开始，保持在起始位置
+            allFinished = false
+            continue
+        }
+
+        const progress = (localTime - delay) / duration
+        
+        if (progress < 1) {
+            allFinished = false
+            // easeOutCubic: 1 - (1-t)^3
+            const t = 1 - Math.pow(1 - progress, 3)
+            
+            positions[i * 3] = _startPositions[i * 3]! + (_targetPositions[i * 3]! - _startPositions[i * 3]!) * t
+            positions[i * 3 + 1] = _startPositions[i * 3 + 1]! + (_targetPositions[i * 3 + 1]! - _startPositions[i * 3 + 1]!) * t
+            positions[i * 3 + 2] = _startPositions[i * 3 + 2]! + (_targetPositions[i * 3 + 2]! - _startPositions[i * 3 + 2]!) * t
+        } else {
+            // 动画完成，确保在目标位置
+            positions[i * 3] = _targetPositions[i * 3]!
+            positions[i * 3 + 1] = _targetPositions[i * 3 + 1]!
+            positions[i * 3 + 2] = _targetPositions[i * 3 + 2]!
+        }
+      }
+
+      geometryRef.value.attributes.position.needsUpdate = true
+
+      if (allFinished) {
+          isConverged = true
+      }
+    }
+
     smoothX += (pointerX - smoothX) * 0.08
     smoothY += (pointerY - smoothY) * 0.08
     velocityX *= 0.88
@@ -172,17 +264,20 @@ onBeforeRender(({ elapsed }) => {
     const speed = Math.min(1, Math.hypot(velocityX, velocityY) * 6)
     
     // 基础旋转
-    pointsRef.value.rotation.y = elapsed * 0.05
-    pointsRef.value.rotation.z = elapsed * 0.02
+    // 即使在等待汇聚时，也要让粒子缓慢旋转，增加活力
+    pointsRef.value.rotation.y = elapsed * (props.startAnimation ? 0.05 : 0.02)
+    pointsRef.value.rotation.z = elapsed * (props.startAnimation ? 0.02 : 0.01)
     
-    // 鼠标交互
-    const targetX = smoothY * 0.7
-    const targetY = smoothX * 0.7
-    
-    pointsRef.value.rotation.x += (targetX - pointsRef.value.rotation.x) * 0.05
-    pointsRef.value.rotation.y += (targetY - pointsRef.value.rotation.y) * 0.05
-    pointsRef.value.position.x = smoothX * 0.35
-    pointsRef.value.position.y = smoothY * 0.25
+    // 鼠标交互 (仅在开始汇聚后启用，或始终启用但弱化)
+    if (props.startAnimation) {
+      const targetX = smoothY * 0.7
+      const targetY = smoothX * 0.7
+      
+      pointsRef.value.rotation.x += (targetX - pointsRef.value.rotation.x) * 0.05
+      pointsRef.value.rotation.y += (targetY - pointsRef.value.rotation.y) * 0.05
+      pointsRef.value.position.x = smoothX * 0.35
+      pointsRef.value.position.y = smoothY * 0.25
+    }
     
     // 脉冲效果
     const baseSize = 0.015

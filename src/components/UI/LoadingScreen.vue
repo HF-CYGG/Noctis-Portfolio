@@ -6,7 +6,7 @@ const props = defineProps<{
   loaded: boolean
 }>()
 
-const emit = defineEmits(['finished'])
+const emit = defineEmits(['finished', 'trigger-entrance'])
 
 const progress = ref(0)
 const overlayRef = ref<HTMLElement | null>(null)
@@ -43,6 +43,8 @@ watch(() => props.loaded, (newVal) => {
 })
 
 function startExitAnimation() {
+  emit('trigger-entrance') // 提前触发 3D 入场动画
+  
   const tl = gsap.timeline({
     onComplete: () => emit('finished')
   })

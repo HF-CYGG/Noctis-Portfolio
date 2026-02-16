@@ -8,6 +8,7 @@ import Lenis from 'lenis'
 
 const isAppLoaded = ref(false)
 const showLoading = ref(true)
+const isEntranceTriggered = ref(false)
 const overlayRef = ref<InstanceType<typeof OverlayInterface> | null>(null)
 
 onMounted(() => {
@@ -23,6 +24,10 @@ onMounted(() => {
   isAppLoaded.value = true
 })
 
+function onEntranceTriggered() {
+  isEntranceTriggered.value = true
+}
+
 function onLoadingFinished() {
   showLoading.value = false
   // Trigger entrance animation after loading screen is removed
@@ -33,14 +38,19 @@ function onLoadingFinished() {
 </script>
 
 <template>
-  <LoadingScreen v-if="showLoading" :loaded="isAppLoaded" @finished="onLoadingFinished" />
+  <LoadingScreen 
+    v-if="showLoading" 
+    :loaded="isAppLoaded" 
+    @trigger-entrance="onEntranceTriggered"
+    @finished="onLoadingFinished" 
+  />
   
   <div class="main-container">
     <!-- 层级 1: 3D 背景 (z-index: 0) -->
     <div class="canvas-layer">
       <TresCanvas clear-color="#050505" window-size>
         <Suspense>
-          <TheExperience />
+          <TheExperience :is-ready="isEntranceTriggered" />
         </Suspense>
       </TresCanvas>
     </div>
