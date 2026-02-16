@@ -36,9 +36,9 @@ export function usePerformance() {
     window.addEventListener('resize', checkMobile)
 
     // 3. 硬件并发数检测 (简单的性能指标)
-    // @ts-ignore
+    // @ts-expect-error: hardwareConcurrency is not in standard Navigator type
     const concurrency = navigator.hardwareConcurrency || 4
-    // @ts-ignore
+    // @ts-expect-error: deviceMemory is not in standard Navigator type
     const memory = navigator.deviceMemory || 4
 
     // 初始评级

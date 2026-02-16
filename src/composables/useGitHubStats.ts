@@ -45,7 +45,7 @@ export function useGitHubStats(repoUrl: string, immediate = true) {
       commitActivity.value = parsed.data.commitActivity
       totalCommits.value = parsed.data.totalCommits
       return true
-    } catch (e) {
+    } catch {
       return false
     }
   }
@@ -132,7 +132,7 @@ export function useGitHubStats(repoUrl: string, immediate = true) {
           totalCommits.value = parsed.data.totalCommits
           error.value = false // 有缓存就不算完全失败
         }
-      } catch (cacheErr) {
+      } catch {
         // 忽略
       }
       

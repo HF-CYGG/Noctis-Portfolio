@@ -7,7 +7,7 @@ export const getRepoPath = (url: string): string => {
   try {
     const urlObj = new URL(url)
     return urlObj.pathname.replace(/^\//, '').replace(/\/$/, '')
-  } catch (e) {
+  } catch {
     return ''
   }
 }

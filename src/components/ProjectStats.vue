@@ -95,6 +95,17 @@ onUnmounted(() => {
       </div>
     </div>
     
+    <!-- Error State -->
+    <div v-else-if="error" class="mt-6 pt-4 border-t border-white/10 w-full">
+      <div class="flex items-center gap-2 text-xs text-red-400/80 mb-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Unable to load stats</span>
+      </div>
+      <div class="text-[10px] text-gray-500 font-mono">
+        Rate limit exceeded or network error.
+      </div>
+    </div>
+    
     <!-- Loading State (Show when loading OR when waiting for visibility) -->
     <div v-else-if="loading || !isVisible" class="mt-6 pt-4 border-t border-white/10 w-full animate-pulse min-h-[110px]">
       <div class="flex items-center gap-2 mb-2">
