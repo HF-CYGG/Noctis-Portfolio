@@ -45,12 +45,12 @@ onMounted(async () => {
 
   // 仅在非移动端 (>= 768px) 且非 reduced-motion 启用复杂的横向滚动动画
   if (!isMobile.value && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    mm.add("(min-width: 768px)", async () => {
-      // 动态导入 GSAP
-      const gsap = (await import('gsap')).gsap
-      const ScrollTrigger = (await import('gsap/ScrollTrigger')).ScrollTrigger
-      gsap.registerPlugin(ScrollTrigger)
+    // 预先动态导入 GSAP
+    const gsap = (await import('gsap')).gsap
+    const ScrollTrigger = (await import('gsap/ScrollTrigger')).ScrollTrigger
+    gsap.registerPlugin(ScrollTrigger)
 
+    mm.add("(min-width: 768px)", () => {
       // 0. 获取元素并检查
       const container = containerRef.value
       const section = sectionRef.value

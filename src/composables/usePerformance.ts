@@ -123,6 +123,9 @@ let isInitialized = false
   // 4. 性能监控 (FPS 监测)
   // 如果连续检测到低帧率，自动降级
   const monitorPerformance = () => {
+    // 避免重复监控
+    if (performanceTier.value === 'L2') return
+
     let frameCount = 0
     let lastTime = performance.now()
     let lowFpsCount = 0
@@ -132,7 +135,10 @@ let isInitialized = false
     const checkFps = () => {
       // 页面不可见时暂停监控，节省电量
       if (document.hidden) {
-        rafId = requestAnimationFrame(checkFps)
+        // 使用 setTimeout 而不是 rAF 轮询，避免在后台消耗资源
+        setTimeout(() => {
+             requestAnimationFrame(checkFps)
+        }, 1000)
         return
       }
 
@@ -147,7 +153,6 @@ let isInitialized = false
       
       if (now - lastTime >= CHECK_INTERVAL) {
         const fps = Math.round((frameCount * 1000) / (now - lastTime))
-        // console.log(`Current FPS: ${fps}`)
         
         // 如果 FPS 低于 30，计数增加
         if (fps < 30) {
@@ -179,8 +184,11 @@ let isInitialized = false
   }
 
   onMounted(() => {
-    init()
-    monitorPerformance()
+    // 仅在初始化时启动监控，避免多组件调用导致的多重循环
+    if (!isInitialized) {
+      init()
+      monitorPerformance()
+    }
   })
 
   return {
