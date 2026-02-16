@@ -96,12 +96,14 @@ onUnmounted(() => {
     </div>
     
     <!-- Loading State (Show when loading OR when waiting for visibility) -->
-    <div v-else-if="loading || !isVisible" class="mt-6 pt-4 border-t border-white/10 w-full animate-pulse">
+    <div v-else-if="loading || !isVisible" class="mt-6 pt-4 border-t border-white/10 w-full animate-pulse min-h-[110px]">
       <div class="flex items-center gap-2 mb-2">
         <div class="w-5 h-5 rounded-full bg-white/10"></div>
         <div class="h-3 w-20 bg-white/10 rounded"></div>
       </div>
-      <div class="h-3 w-full bg-white/10 rounded mb-2"></div>
+      <!-- Placeholder for commit message (2 lines approx) -->
+      <div class="h-8 w-full bg-white/10 rounded mb-3"></div>
+      <!-- Placeholder for footer -->
       <div class="h-8 w-full bg-white/5 rounded"></div>
     </div>
   </div>
