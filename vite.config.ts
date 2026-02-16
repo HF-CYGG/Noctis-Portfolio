@@ -38,6 +38,6 @@ export default defineConfig({
       }
     },
     // 调高警告阈值，因为我们已经手动拆包了
-    chunkSizeWarningLimit: 600
+    chunkSizeWarningLimit: 1200
   }
 })

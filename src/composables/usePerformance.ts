@@ -70,6 +70,30 @@ let isInitialized = false
   }
 
   export function usePerformance() {
+    const updateTier = (concurrency = 4, memory = 4) => {
+      // 强制降级条件
+      if (prefersReducedMotion.value) {
+        performanceTier.value = 'L2'
+        return
+      }
+  
+      // 移动端默认 L1
+      if (isMobile.value) {
+        // 如果设备很强，也可以 L1+ (暂时统一 L1)
+        performanceTier.value = 'L1'
+        return
+      }
+  
+      // 低端桌面设备降级
+      if (concurrency < 4 || memory < 4) {
+        performanceTier.value = 'L1'
+        return
+      }
+  
+      // 默认 L0
+      performanceTier.value = 'L0'
+    }
+
     const init = () => {
       if (isInitialized) return
       
@@ -94,29 +118,7 @@ let isInitialized = false
       isInitialized = true
     }
 
-  const updateTier = (concurrency = 4, memory = 4) => {
-    // 强制降级条件
-    if (prefersReducedMotion.value) {
-      performanceTier.value = 'L2'
-      return
-    }
 
-    // 移动端默认 L1
-    if (isMobile.value) {
-      // 如果设备很强，也可以 L1+ (暂时统一 L1)
-      performanceTier.value = 'L1'
-      return
-    }
-
-    // 低端桌面设备降级
-    if (concurrency < 4 || memory < 4) {
-      performanceTier.value = 'L1'
-      return
-    }
-
-    // 默认 L0
-    performanceTier.value = 'L0'
-  }
 
   // 4. 性能监控 (FPS 监测)
   // 如果连续检测到低帧率，自动降级
