@@ -127,7 +127,7 @@ onUnmounted(() => {
       <p class="text-xl sm:text-2xl text-gray-300 font-light tracking-wide leading-relaxed">
         我是 <span class="text-noctis-accent font-medium">夜喵cats（HF-CYGG）</span>，一名全栈开发者。
         <br class="hidden sm:block" />
-        擅长构建沉浸式 Web 体验与高效后端系统。
+        喜欢搞点有趣的小项目。
       </p>
     </div>
     
