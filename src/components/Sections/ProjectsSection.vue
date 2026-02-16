@@ -11,7 +11,21 @@ const sectionRef = ref<HTMLElement | null>(null)
 const containerRef = ref<HTMLDivElement | null>(null)
 let mm: gsap.MatchMedia
 
+const isMobile = ref(false)
+const activeCardIndex = ref<number | null>(null)
+
+const toggleCard = (index: number) => {
+  if (!isMobile.value) return
+  if (activeCardIndex.value === index) {
+    activeCardIndex.value = null
+  } else {
+    activeCardIndex.value = index
+  }
+}
+
 onMounted(() => {
+  isMobile.value = window.innerWidth < 768
+  
   // 横向滚动动画
   // 使用 gsap.context 确保动画和 ScrollTrigger 实例在组件卸载时能被正确清理
   // 这对于防止内存泄漏和路由切换时的动画错位至关重要
@@ -76,42 +90,69 @@ onUnmounted(() => {
         v-for="(project, index) in projects" 
         :key="index"
         class="project-card group relative w-full md:w-[500px] min-h-[500px] h-auto p-8 border border-white/10 rounded-xl bg-black/40 backdrop-blur-xl hover:bg-white/5 transition-all duration-500 flex flex-col justify-between overflow-hidden"
+        :class="{ 'bg-white/5 border-white/30': activeCardIndex === index }"
+        @click="toggleCard(index)"
       >
-        <!-- 悬浮发光效果 -->
-        <div class="absolute inset-0 bg-gradient-to-br from-noctis-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-        <div class="absolute -top-1/2 -right-1/2 w-full h-full bg-noctis-accent/5 blur-[100px] rounded-full group-hover:translate-x-[-20%] group-hover:translate-y-[20%] transition-transform duration-1000 ease-out pointer-events-none"></div>
+        <!-- 悬浮发光效果 (Hover or Active) -->
+        <div 
+          class="absolute inset-0 bg-gradient-to-br from-noctis-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+          :class="{ 'opacity-100': activeCardIndex === index }"
+        ></div>
+        <div 
+          class="absolute -top-1/2 -right-1/2 w-full h-full bg-noctis-accent/5 blur-[100px] rounded-full group-hover:translate-x-[-20%] group-hover:translate-y-[20%] transition-transform duration-1000 ease-out pointer-events-none"
+          :class="{ 'translate-x-[-20%] translate-y-[20%]': activeCardIndex === index }"
+        ></div>
 
         <!-- 内容区域 -->
         <div class="relative z-10 h-full flex flex-col">
           <div>
             <div class="flex justify-between items-start mb-4">
               <span class="font-mono text-xs text-noctis-accent/80 tracking-widest uppercase">0{{ index + 1 }}</span>
-              <div class="w-2 h-2 rounded-full bg-white/20 group-hover:bg-noctis-accent transition-colors"></div>
+              <div 
+                class="w-2 h-2 rounded-full bg-white/20 group-hover:bg-noctis-accent transition-colors"
+                :class="{ 'bg-noctis-accent': activeCardIndex === index }"
+              ></div>
             </div>
             
-            <h3 class="text-3xl font-bold mb-4 group-hover:text-noctis-accent transition-colors">{{ project.title }}</h3>
+            <h3 
+              class="text-3xl font-bold mb-4 group-hover:text-noctis-accent transition-colors"
+              :class="{ 'text-noctis-accent': activeCardIndex === index }"
+            >{{ project.title }}</h3>
             
-            <!-- 项目内容模板：价值 / 职责 / 方案 / 结果 -->
-            <div class="mb-6 space-y-4 text-sm">
-              <div>
-                <p class="text-xs text-noctis-accent/70 font-mono mb-1 tracking-wider uppercase">/// Core Value</p>
-                <p class="text-gray-300 leading-relaxed">{{ project.value }}</p>
+            <!-- 项目内容模板：价值 / 职责 / 方案 / 结果 (产品化结构) -->
+            <div class="mb-6 grid gap-4">
+              <!-- Value -->
+              <div class="relative pl-4 border-l-2 border-noctis-accent/30">
+                <h4 class="text-[10px] font-bold text-noctis-accent uppercase tracking-widest mb-1">Core Value</h4>
+                <p class="text-gray-300 text-sm leading-relaxed">{{ project.value }}</p>
               </div>
-              <div>
-                <p class="text-xs text-noctis-accent/70 font-mono mb-1 tracking-wider uppercase">/// Role & Scope</p>
-                <p class="text-gray-300 leading-relaxed">{{ project.responsibility }}</p>
+              
+              <!-- Role & Impact Group -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="bg-white/5 rounded p-3 border border-white/5">
+                  <h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+                    Role
+                  </h4>
+                  <p class="text-gray-300 text-xs leading-relaxed">{{ project.responsibility }}</p>
+                </div>
+                <div class="bg-white/5 rounded p-3 border border-white/5">
+                  <h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+                    Impact
+                  </h4>
+                  <p class="text-gray-300 text-xs leading-relaxed">{{ project.impact }}</p>
+                </div>
               </div>
+
+              <!-- Tech Stack Decisions -->
               <div>
-                <p class="text-xs text-noctis-accent/70 font-mono mb-1 tracking-wider uppercase">/// Tech Stack & Decisions</p>
-                <ul class="list-none space-y-1 text-gray-300">
-                  <li v-for="(item, idx) in project.approach" :key="idx" class="relative pl-3 before:content-['>'] before:absolute before:left-0 before:text-noctis-accent/50 before:text-xs">
+                <h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Tech Strategy</h4>
+                <ul class="list-none space-y-1.5 text-gray-300">
+                  <li v-for="(item, idx) in project.approach" :key="idx" class="relative pl-3 text-xs before:content-['>'] before:absolute before:left-0 before:text-noctis-accent/50 before:text-[10px]">
                     {{ item }}
                   </li>
                 </ul>
-              </div>
-              <div>
-                <p class="text-xs text-noctis-accent/70 font-mono mb-1 tracking-wider uppercase">/// Impact</p>
-                <p class="text-gray-300 leading-relaxed">{{ project.impact }}</p>
               </div>
             </div>
           </div>
@@ -119,7 +160,7 @@ onUnmounted(() => {
           <div class="mt-auto">
              <!-- 技术标签 -->
              <div class="flex flex-wrap gap-2 mb-4">
-               <span v-for="tag in project.tags" :key="tag" class="text-xs font-mono px-2 py-1 border border-white/10 rounded text-gray-400 group-hover:border-white/30 transition-colors">
+               <span v-for="tag in project.tags" :key="tag" class="text-[10px] font-mono px-2 py-1 border border-white/10 rounded text-gray-400 group-hover:border-white/30 transition-colors">
                  {{ tag }}
                </span>
              </div>
