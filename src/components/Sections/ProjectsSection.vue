@@ -19,6 +19,12 @@ onMounted(() => {
 
   // 仅在非移动端 (>= 768px) 启用复杂的横向滚动动画
   mm.add("(min-width: 768px)", () => {
+    // 0. 获取元素并检查
+    const container = containerRef.value
+    const section = sectionRef.value
+    
+    if (!container || !section) return
+
     // 1. 容器横向滚动逻辑
     const horizontalTween = gsap.to(container, {
       x: () => -(container.scrollWidth - window.innerWidth + 200), // 计算滚动距离

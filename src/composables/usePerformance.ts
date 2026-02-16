@@ -12,6 +12,10 @@ const performanceTier = ref<PerformanceTier>('L0')
 const isMobile = ref(false)
 const prefersReducedMotion = ref(false)
 
+interface ExtendedNavigator extends Navigator {
+  deviceMemory?: number
+}
+
 // 单例模式，避免重复监听
 let isInitialized = false
 
@@ -36,10 +40,9 @@ export function usePerformance() {
     window.addEventListener('resize', checkMobile)
 
     // 3. 硬件并发数检测 (简单的性能指标)
-    // @ts-expect-error: hardwareConcurrency is not in standard Navigator type
+    const nav = navigator as ExtendedNavigator
     const concurrency = navigator.hardwareConcurrency || 4
-    // @ts-expect-error: deviceMemory is not in standard Navigator type
-    const memory = navigator.deviceMemory || 4
+    const memory = nav.deviceMemory || 4
 
     // 初始评级
     updateTier(concurrency, memory)
