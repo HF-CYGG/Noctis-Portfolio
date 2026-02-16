@@ -79,13 +79,13 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section ref="sectionRef" id="projects" class="min-h-screen flex flex-col justify-center overflow-hidden py-20 relative">
+  <section ref="sectionRef" id="projects" class="min-h-screen flex flex-col justify-center md:justify-start overflow-hidden py-20 relative">
     <div class="container mx-auto px-4 md:px-8 mb-8 md:absolute md:top-20 md:left-20 z-20">
       <h2 class="text-4xl md:text-6xl font-bold mb-2">THE FORGE</h2>
       <p class="text-gray-400">精选项目展示</p>
     </div>
     
-    <div ref="containerRef" class="flex flex-col md:flex-row gap-8 px-4 md:pl-[30vw] md:pr-[10vw] w-full md:w-max">
+    <div ref="containerRef" class="relative z-10 flex flex-col md:flex-row gap-8 px-4 md:pl-[30vw] md:pr-[10vw] w-full md:w-max md:mt-40">
       <div 
         v-for="(project, index) in projects" 
         :key="index"
