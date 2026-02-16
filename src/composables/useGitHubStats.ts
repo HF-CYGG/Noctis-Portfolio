@@ -69,49 +69,61 @@ export function useGitHubStats(repoUrl: string, immediate = true) {
       currentRequests++
       
       // 1. 获取最新提交
-      const commitRes = await fetch(`https://api.github.com/repos/${repoPath}/commits?per_page=1`)
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 8000) // 8秒超时
       
-      // 专门处理速率限制
-      if (commitRes.status === 403 || commitRes.status === 429) {
-        console.warn(`GitHub API Rate Limit Exceeded for ${repoPath}`)
-        throw new Error('Rate Limit')
-      }
-      
-      if (!commitRes.ok) throw new Error('Failed to fetch commits')
-      
-      const commitData = await commitRes.json()
-      if (Array.isArray(commitData) && commitData.length > 0) {
-        const c = commitData[0]
-        // 防御式解析，避免 undefined 错误
-        if (c?.commit) {
-          latestCommit.value = {
-            message: c.commit.message || 'No message',
-            authorName: c.commit.author?.name || 'Unknown',
-            authorAvatar: c.author?.avatar_url || `https://ui-avatars.com/api/?name=${c.commit.author?.name || 'Unknown'}`,
-            date: c.commit.author?.date || new Date().toISOString(),
-            sha: c.sha ? c.sha.substring(0, 7) : '???????',
-            htmlUrl: c.html_url || '#'
-          }
+      try {
+        const commitRes = await fetch(`https://api.github.com/repos/${repoPath}/commits?per_page=1`, {
+          signal: controller.signal
+        })
+        
+        // 专门处理速率限制
+        if (commitRes.status === 403 || commitRes.status === 429) {
+          console.warn(`GitHub API Rate Limit Exceeded for ${repoPath}`)
+          throw new Error('Rate Limit')
         }
         
-        // 尝试从 Link header 获取提交总数
-        const linkHeader = commitRes.headers.get('Link')
-        if (linkHeader) {
-          const match = linkHeader.match(/&page=(\d+)>; rel="last"/)
-          if (match && match[1]) {
-            totalCommits.value = parseInt(match[1])
+        if (!commitRes.ok) throw new Error('Failed to fetch commits')
+        
+        const commitData = await commitRes.json()
+        if (Array.isArray(commitData) && commitData.length > 0) {
+          const c = commitData[0]
+          // 防御式解析，避免 undefined 错误
+          if (c?.commit) {
+            latestCommit.value = {
+              message: c.commit.message || 'No message',
+              authorName: c.commit.author?.name || 'Unknown',
+              authorAvatar: c.author?.avatar_url || `https://ui-avatars.com/api/?name=${c.commit.author?.name || 'Unknown'}`,
+              date: c.commit.author?.date || new Date().toISOString(),
+              sha: c.sha ? c.sha.substring(0, 7) : '???????',
+              htmlUrl: c.html_url || '#'
+            }
+          }
+          
+          // 尝试从 Link header 获取提交总数
+          const linkHeader = commitRes.headers.get('Link')
+          if (linkHeader) {
+            const match = linkHeader.match(/&page=(\d+)>; rel="last"/)
+            if (match && match[1]) {
+              totalCommits.value = parseInt(match[1])
+            }
           }
         }
-      }
 
-      // 2. 获取参与度统计
-      const statsRes = await fetch(`https://api.github.com/repos/${repoPath}/stats/participation`)
-      if (statsRes.ok) {
-        const statsData = await statsRes.json()
-        // 使用最近 12 周的数据
-        if (statsData?.all && Array.isArray(statsData.all)) {
-          commitActivity.value = statsData.all.slice(-12)
+        // 2. 获取参与度统计
+        // 复用 controller 或者新建一个？通常复用即可，或者给第二个请求单独的超时
+        const statsRes = await fetch(`https://api.github.com/repos/${repoPath}/stats/participation`, {
+          signal: controller.signal
+        })
+        if (statsRes.ok) {
+          const statsData = await statsRes.json()
+          // 使用最近 12 周的数据
+          if (statsData?.all && Array.isArray(statsData.all)) {
+            commitActivity.value = statsData.all.slice(-12)
+          }
         }
+      } finally {
+        clearTimeout(timeoutId)
       }
 
       saveToCache(repoPath)

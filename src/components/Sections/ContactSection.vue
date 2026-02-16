@@ -2,8 +2,10 @@
 import { ref } from 'vue'
 
 const copied = ref(false)
+const copyError = ref(false)
 
 const copyEmail = async () => {
+  copyError.value = false
   try {
     await navigator.clipboard.writeText('yyh1677696627@outlook.com') // Real email
     copied.value = true
@@ -12,6 +14,10 @@ const copyEmail = async () => {
     }, 2000)
   } catch (e) {
     console.error('Failed to copy', e)
+    copyError.value = true
+    setTimeout(() => {
+      copyError.value = false
+    }, 2000)
   }
 }
 </script>
@@ -29,14 +35,15 @@ const copyEmail = async () => {
         <button 
           @click="copyEmail"
           class="group relative px-8 py-4 bg-white/5 border border-white/10 hover:border-noctis-accent/50 hover:bg-noctis-accent/5 transition-all rounded-lg w-full md:w-auto min-w-[240px] focus:outline-none focus:ring-2 focus:ring-noctis-accent/50"
-          :aria-label="copied ? '已复制邮箱' : '复制邮箱 yyh1677696627@outlook.com'"
+          :aria-label="copied ? '已复制邮箱' : (copyError ? '复制失败' : '复制邮箱 yyh1677696627@outlook.com')"
         >
           <div class="flex items-center justify-center gap-3">
-            <svg v-if="!copied" class="w-5 h-5 text-gray-400 group-hover:text-noctis-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-            <svg v-else class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            <svg v-if="!copied && !copyError" class="w-5 h-5 text-gray-400 group-hover:text-noctis-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            <svg v-else-if="copied" class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            <svg v-else class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             
-            <span class="font-mono text-sm tracking-wide">
-              {{ copied ? '已复制邮箱' : 'yyh1677696627@outlook.com' }}
+            <span class="font-mono text-sm tracking-wide" :class="{'text-red-400': copyError}">
+              {{ copied ? '已复制邮箱' : (copyError ? '复制失败，请手动复制' : 'yyh1677696627@outlook.com') }}
             </span>
           </div>
         </button>

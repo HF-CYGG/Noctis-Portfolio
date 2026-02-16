@@ -96,7 +96,7 @@ onUnmounted(() => {
     </div>
     
     <!-- Error State -->
-    <div v-else-if="error" class="mt-6 pt-4 border-t border-white/10 w-full">
+    <div v-else-if="error" class="mt-6 pt-4 border-t border-white/10 w-full min-h-[110px] flex flex-col justify-center">
       <div class="flex items-center gap-2 text-xs text-red-400/80 mb-2">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <span>Unable to load stats</span>
