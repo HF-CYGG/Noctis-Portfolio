@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
 import { OrbitControls, Stars } from '@tresjs/cientos'
-import ParticleSphere from './ParticleSphere.vue'
+import { usePerformance } from '../composables/usePerformance'
+
+// 异步加载 3D 核心组件，避免阻塞首屏 JS
+const ParticleSphere = defineAsyncComponent(() => import('./ParticleSphere.vue'))
+
+const { shouldEnable3D, particleCount } = usePerformance()
 
 const cameraPosition = ref<[number, number, number]>([0, 0, 5])
 
@@ -26,10 +31,15 @@ onUnmounted(() => {
 
 <template>
   <TresPerspectiveCamera :position="cameraPosition" :fov="45" />
-  <OrbitControls :enable-zoom="false" :enable-pan="false" :auto-rotate="true" :auto-rotate-speed="0.5" />
-  <Stars :radius="100" :depth="50" :count="5000" :size="0.1" :size-attenuation="true" />
   
-  <ParticleSphere />
+  <template v-if="shouldEnable3D">
+    <OrbitControls :enable-zoom="false" :enable-pan="false" :auto-rotate="true" :auto-rotate-speed="0.5" />
+    <Stars :radius="100" :depth="50" :count="particleCount > 2000 ? 5000 : 2000" :size="0.1" :size-attenuation="true" />
+    
+    <Suspense>
+      <ParticleSphere />
+    </Suspense>
+  </template>
   
   <TresAmbientLight :intensity="1" />
   <TresDirectionalLight :position="[10, 10, 10]" :intensity="1" />

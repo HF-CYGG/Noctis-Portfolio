@@ -5,6 +5,18 @@ import type { CommitInfo, CachedData } from '../lib/types'
 const CACHE_PREFIX = 'noctis_gh_stats_'
 const CACHE_TTL = 60 * 60 * 1000 // 1 hour
 
+// 全局并发控制器
+const MAX_CONCURRENT_REQUESTS = 2
+let currentRequests = 0
+const requestQueue: (() => void)[] = []
+
+const processQueue = () => {
+  if (currentRequests < MAX_CONCURRENT_REQUESTS && requestQueue.length > 0) {
+    const next = requestQueue.shift()
+    next?.()
+  }
+}
+
 /**
  * GitHub 统计信息组合式函数
  * @param repoUrl GitHub 仓库 URL
@@ -50,42 +62,34 @@ export function useGitHubStats(repoUrl: string) {
     localStorage.setItem(CACHE_PREFIX + repoPath, JSON.stringify(cacheData))
   }
 
-  const fetchStats = async () => {
-    const repoPath = getRepoPath(repoUrl)
-    if (!repoPath) {
-      error.value = true
-      loading.value = false
-      return
-    }
-
-    // 尝试读取缓存
-    if (loadFromCache(repoPath)) {
-      loading.value = false
-      return
-    }
-
+  const executeFetch = async (repoPath: string) => {
     try {
+      currentRequests++
+      
       // 1. 获取最新提交
       const commitRes = await fetch(`https://api.github.com/repos/${repoPath}/commits?per_page=1`)
       
       // 专门处理速率限制
       if (commitRes.status === 403 || commitRes.status === 429) {
-        console.warn('GitHub API Rate Limit Exceeded')
+        console.warn(`GitHub API Rate Limit Exceeded for ${repoPath}`)
         throw new Error('Rate Limit')
       }
       
       if (!commitRes.ok) throw new Error('Failed to fetch commits')
       
       const commitData = await commitRes.json()
-      if (commitData.length > 0) {
+      if (Array.isArray(commitData) && commitData.length > 0) {
         const c = commitData[0]
-        latestCommit.value = {
-          message: c.commit.message,
-          authorName: c.commit.author.name,
-          authorAvatar: c.author ? c.author.avatar_url : `https://ui-avatars.com/api/?name=${c.commit.author.name}`,
-          date: c.commit.author.date,
-          sha: c.sha.substring(0, 7),
-          htmlUrl: c.html_url
+        // 防御式解析，避免 undefined 错误
+        if (c?.commit) {
+          latestCommit.value = {
+            message: c.commit.message || 'No message',
+            authorName: c.commit.author?.name || 'Unknown',
+            authorAvatar: c.author?.avatar_url || `https://ui-avatars.com/api/?name=${c.commit.author?.name || 'Unknown'}`,
+            date: c.commit.author?.date || new Date().toISOString(),
+            sha: c.sha ? c.sha.substring(0, 7) : '???????',
+            htmlUrl: c.html_url || '#'
+          }
         }
         
         // 尝试从 Link header 获取提交总数
@@ -103,7 +107,7 @@ export function useGitHubStats(repoUrl: string) {
       if (statsRes.ok) {
         const statsData = await statsRes.json()
         // 使用最近 12 周的数据
-        if (statsData.all) {
+        if (statsData?.all && Array.isArray(statsData.all)) {
           commitActivity.value = statsData.all.slice(-12)
         }
       }
@@ -111,10 +115,51 @@ export function useGitHubStats(repoUrl: string) {
       saveToCache(repoPath)
 
     } catch (e) {
-      console.error('GitHub API Error:', e)
+      console.error(`GitHub API Error (${repoPath}):`, e)
       error.value = true
+      
+      // 失败时尝试加载旧缓存（如果存在且已过期，也尝试使用）
+      // 这里可以实现更复杂的“过时缓存”逻辑，但目前简化处理
+      try {
+        const cached = localStorage.getItem(CACHE_PREFIX + repoPath)
+        if (cached) {
+          const parsed: CachedData = JSON.parse(cached)
+          // 即使过期也使用
+          latestCommit.value = parsed.data.latestCommit
+          commitActivity.value = parsed.data.commitActivity
+          totalCommits.value = parsed.data.totalCommits
+          error.value = false // 有缓存就不算完全失败
+        }
+      } catch (cacheErr) {
+        // 忽略
+      }
+      
     } finally {
       loading.value = false
+      currentRequests--
+      processQueue()
+    }
+  }
+
+  const fetchStats = async () => {
+    const repoPath = getRepoPath(repoUrl)
+    if (!repoPath) {
+      error.value = true
+      loading.value = false
+      return
+    }
+
+    // 尝试读取缓存 (有效缓存)
+    if (loadFromCache(repoPath)) {
+      loading.value = false
+      return
+    }
+
+    // 加入请求队列
+    if (currentRequests < MAX_CONCURRENT_REQUESTS) {
+      executeFetch(repoPath)
+    } else {
+      requestQueue.push(() => executeFetch(repoPath))
     }
   }
 

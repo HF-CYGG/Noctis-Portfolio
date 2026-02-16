@@ -4,6 +4,7 @@ import { useLoop } from '@tresjs/core'
 import { BufferGeometry, Float32BufferAttribute, PointsMaterial, AdditiveBlending, Points } from 'three'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { usePerformance } from '../composables/usePerformance'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -11,6 +12,8 @@ const pointsRef = shallowRef<Points | null>(null)
 // 使用 shallowRef 管理 Three.js 对象，确保正确响应和销毁
 const geometryRef = shallowRef<BufferGeometry | null>(null)
 const materialRef = shallowRef<PointsMaterial | null>(null)
+
+const { particleCount, shouldEnable3D } = usePerformance()
 
 let ctx: gsap.Context | null = null
 
@@ -57,8 +60,10 @@ const handlePointerDown = () => {
 
 // 初始化几何体和材质
 const initResources = () => {
-  const isMobile = window.innerWidth < 768
-  const count = isMobile ? 1500 : 4000
+  // 性能预算：如果不需要 3D，直接跳过初始化
+  if (!shouldEnable3D.value) return
+
+  const count = particleCount.value
   const positions = new Float32Array(count * 3)
   const colors = new Float32Array(count * 3)
 
@@ -230,10 +235,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <TresPoints 
-    v-if="geometryRef && materialRef" 
-    ref="pointsRef" 
-    :geometry="geometryRef" 
-    :material="materialRef" 
+  <TresPoints
+    v-if="shouldEnable3D && geometryRef && materialRef"
+    ref="pointsRef"
+    :geometry="geometryRef"
+    :material="materialRef"
+    @pointer-move="handlePointerMove"
+    @pointer-down="handlePointerDown"
   />
 </template>
