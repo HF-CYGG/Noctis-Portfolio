@@ -314,18 +314,24 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('pointermove', handlePointerMove)
   window.removeEventListener('pointerdown', handlePointerDown)
-  
   ctx?.revert()
   
-  // 显式清理资源
+  // Three.js 资源清理
   if (geometryRef.value) {
     geometryRef.value.dispose()
     geometryRef.value = null
   }
+  
   if (materialRef.value) {
     materialRef.value.dispose()
     materialRef.value = null
   }
+  
+  // 数组清理
+  targetPositions = null
+  startPositions = null
+  delays = null
+  durations = null
 })
 </script>
 

@@ -13,28 +13,27 @@ let mm: gsap.MatchMedia
 
 onMounted(() => {
   // 横向滚动动画
-  const container = containerRef.value
-  const section = sectionRef.value
-  
-  if (!container || !section) return
-
+  // 使用 gsap.context 确保动画和 ScrollTrigger 实例在组件卸载时能被正确清理
+  // 这对于防止内存泄漏和路由切换时的动画错位至关重要
   mm = gsap.matchMedia()
 
+  // 仅在非移动端 (>= 768px) 启用复杂的横向滚动动画
   mm.add("(min-width: 768px)", () => {
+    // 1. 容器横向滚动逻辑
     const horizontalTween = gsap.to(container, {
-      x: () => -(container.scrollWidth - window.innerWidth + 200),
+      x: () => -(container.scrollWidth - window.innerWidth + 200), // 计算滚动距离
       ease: "none",
       scrollTrigger: {
         trigger: section,
-        pin: true,
-        scrub: 1,
+        pin: true,     // 固定父容器
+        scrub: 1,      // 平滑滚动效果 (1s 延迟)
         start: "top top",
-        end: () => "+=" + container.scrollWidth,
-        invalidateOnRefresh: true
+        end: () => "+=" + container.scrollWidth, // 滚动长度等于容器内容宽度
+        invalidateOnRefresh: true // 窗口调整大小时重新计算
       }
     })
     
-    // 卡片的视差与倾斜效果
+    // 2. 卡片的视差与倾斜效果
     const cards = gsap.utils.toArray<HTMLElement>('.project-card')
     cards.forEach((card) => {
       gsap.to(card, {
@@ -44,7 +43,7 @@ onMounted(() => {
           start: "left center",
           end: "right center",
           scrub: true,
-          containerAnimation: horizontalTween
+          containerAnimation: horizontalTween // 链接到横向滚动动画
         }
       })
     })
@@ -52,7 +51,10 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  // 严格清理：撤销所有媒体查询相关的动画和 ScrollTrigger
   mm?.revert()
+  // 额外清理：确保 ScrollTrigger 刷新，避免幽灵触发器
+  ScrollTrigger.refresh()
 })
 </script>
 

@@ -120,8 +120,8 @@ export function useGitHubStats(repoUrl: string, immediate = true) {
       console.error(`GitHub API Error (${repoPath}):`, e)
       error.value = true
       
-      // 失败时尝试加载旧缓存（如果存在且已过期，也尝试使用）
-      // 这里可以实现更复杂的“过时缓存”逻辑，但目前简化处理
+      // 兜底策略：失败时尝试加载旧缓存（如果存在且已过期，也尝试使用）
+      // 即使 API 挂了或者限流，只要本地有历史数据，就优先展示历史数据而不是报错
       try {
         const cached = localStorage.getItem(CACHE_PREFIX + repoPath)
         if (cached) {
@@ -130,10 +130,10 @@ export function useGitHubStats(repoUrl: string, immediate = true) {
           latestCommit.value = parsed.data.latestCommit
           commitActivity.value = parsed.data.commitActivity
           totalCommits.value = parsed.data.totalCommits
-          error.value = false // 有缓存就不算完全失败
+          error.value = false // 有缓存就不算完全失败，隐藏错误提示
         }
       } catch {
-        // 忽略
+        // 忽略解析错误
       }
       
     } finally {

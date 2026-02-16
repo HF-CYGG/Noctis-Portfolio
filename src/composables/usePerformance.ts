@@ -71,8 +71,57 @@ export function usePerformance() {
     performanceTier.value = 'L0'
   }
 
+  // 4. 性能监控 (FPS 监测)
+  // 如果连续检测到低帧率，自动降级
+  const monitorPerformance = () => {
+    let frameCount = 0
+    let lastTime = performance.now()
+    let lowFpsCount = 0
+    const CHECK_INTERVAL = 1000 // 1秒检查一次
+    
+    const checkFps = () => {
+      // 如果已经是最低等级，不再监测
+      if (performanceTier.value === 'L2') return
+
+      const now = performance.now()
+      frameCount++
+      
+      if (now - lastTime >= CHECK_INTERVAL) {
+        const fps = Math.round((frameCount * 1000) / (now - lastTime))
+        // console.log(`Current FPS: ${fps}`)
+        
+        // 如果 FPS 低于 30，计数增加
+        if (fps < 30) {
+          lowFpsCount++
+        } else {
+          // 恢复正常则重置计数 (避免偶尔卡顿导致误判)
+          lowFpsCount = Math.max(0, lowFpsCount - 1)
+        }
+        
+        // 连续 3 次检测到低帧率，触发降级
+        if (lowFpsCount >= 3) {
+          console.warn('Low FPS detected, downgrading performance tier...')
+          if (performanceTier.value === 'L0') {
+            performanceTier.value = 'L1'
+          } else if (performanceTier.value === 'L1') {
+            performanceTier.value = 'L2'
+          }
+          lowFpsCount = 0 // 重置计数，避免连续降级太快
+        }
+        
+        frameCount = 0
+        lastTime = now
+      }
+      
+      requestAnimationFrame(checkFps)
+    }
+    
+    requestAnimationFrame(checkFps)
+  }
+
   onMounted(() => {
     init()
+    monitorPerformance()
   })
 
   return {
