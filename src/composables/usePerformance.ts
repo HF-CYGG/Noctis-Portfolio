@@ -1,5 +1,5 @@
 import { ref, onMounted, computed } from 'vue'
-import { onLCP, onINP, onCLS } from 'web-vitals'
+import { onLCP, onINP, onCLS, type Metric } from 'web-vitals'
 
 /**
  * 性能等级枚举
@@ -19,7 +19,7 @@ let isInitialized = false
 // 5. Web Vitals 采集 (仅在生产环境或显式开启时上报)
   const reportWebVitals = () => {
     // 这里可以替换为你的真实上报接口 (Google Analytics / Sentry / 自研埋点)
-    const sendToAnalytics = (metric: any) => {
+    const sendToAnalytics = (metric: Metric) => {
       // 仅在开发环境打印，生产环境请替换为 navigator.sendBeacon
       if (import.meta.env.DEV) {
         console.log('[Web Vitals]', metric.name, metric.value, metric)
@@ -56,15 +56,13 @@ let isInitialized = false
   // 全局监听 error 事件，捕获 img/script/link 加载失败
   const monitorResourceErrors = () => {
     window.addEventListener('error', (event) => {
-      // 过滤 JS 运行时错误，只处理资源加载错误
-      // 资源错误 event.target 是 HTML 元素，且 event instanceof Event (不是 ErrorEvent)
-      const target = event.target as HTMLElement
-      if (target && (target.tagName === 'IMG' || target.tagName === 'SCRIPT' || target.tagName === 'LINK')) {
-        const url = (target as any).src || (target as any).href
-        console.error('[Resource Error]', target.tagName, url)
-        
-        // 可以在这里上报资源失败
-        // navigator.sendBeacon(...)
+      const target = event.target
+      if (target instanceof HTMLImageElement || target instanceof HTMLScriptElement) {
+        console.error('[Resource Error]', target.tagName, target.src)
+        return
+      }
+      if (target instanceof HTMLLinkElement) {
+        console.error('[Resource Error]', target.tagName, target.href)
       }
     }, true) // 必须使用捕获阶段 (capture: true) 才能捕获资源错误
   }
@@ -101,7 +99,7 @@ let isInitialized = false
 
       // 3. 硬件并发数检测 (简单的性能指标)
       const concurrency = navigator.hardwareConcurrency || 4
-      const memory = (navigator as any).deviceMemory || 4
+      const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory || 4
 
       // 初始评级
       updateTier(concurrency, memory)

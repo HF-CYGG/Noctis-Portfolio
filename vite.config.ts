@@ -4,8 +4,8 @@ import vue from '@vitejs/plugin-vue'
 import { templateCompilerOptions } from '@tresjs/core'
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  base: '/Noctis-Portfolio/', // GitHub Pages repo name
+export default defineConfig(({ mode }) => ({
+  base: mode === 'development' ? '/' : '/Noctis-Portfolio/', // GitHub Pages repo name
   plugins: [
     vue({
       ...templateCompilerOptions
@@ -40,4 +40,4 @@ export default defineConfig({
     // 调高警告阈值，因为我们已经手动拆包了
     chunkSizeWarningLimit: 1200
   }
-})
+}))

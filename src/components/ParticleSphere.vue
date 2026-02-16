@@ -8,6 +8,8 @@ import { usePerformance } from '../composables/usePerformance'
 
 // gsap.registerPlugin(ScrollTrigger)
 
+type GsapContext = { revert: () => void }
+
 const props = defineProps<{
   startAnimation: boolean
 }>()
@@ -27,7 +29,7 @@ let durations: Float32Array | null = null
 let startTime = 0
 let isConverged = false
 
-let ctx: any = null // gsap.Context
+let ctx: GsapContext | null = null
 
 // 动画循环相关变量
 let pointerX = 0

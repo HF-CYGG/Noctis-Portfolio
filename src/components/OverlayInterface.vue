@@ -25,73 +25,105 @@ const loadGsap = async () => {
 }
 
 onMounted(async () => {
-  const { gsap } = await loadGsap()
-  
-  // Set initial state for main content
-  if (mainRef.value) {
-    gsap.set(mainRef.value, {
-      opacity: 0,
-      y: 30
-    })
-  }
+  try {
+    const { gsap } = await loadGsap()
 
-  // Set initial state for nav links to prevent flash
-  if (navRef.value) {
-    gsap.set(navRef.value.children, {
-      opacity: 0,
-      y: -20
-    })
+    // Set initial state for main content
+    if (mainRef.value) {
+      gsap.set(mainRef.value, {
+        opacity: 0,
+        y: 30
+      })
+    }
+
+    // Set initial state for nav links to prevent flash
+    if (navRef.value) {
+      gsap.set(navRef.value.children, {
+        opacity: 0,
+        y: -20
+      })
+    }
+  } catch {
+    if (logoRef.value) logoRef.value.style.opacity = '1'
+    if (navRef.value) {
+      Array.from(navRef.value.children).forEach((node) => {
+        const el = node as HTMLElement
+        el.style.opacity = '1'
+        el.style.transform = 'none'
+      })
+    }
+    if (quoteRef.value) quoteRef.value.style.opacity = '1'
+    if (mainRef.value) {
+      mainRef.value.style.opacity = '1'
+      mainRef.value.style.transform = 'none'
+    }
   }
 })
 
 // Method to start entrance animations
 const playEntrance = async () => {
-  const { gsap, ScrollTrigger } = await loadGsap()
-  const tl = gsap.timeline()
-  
-  // Fade in logo (instant or very fast to match loader exit)
-  if (logoRef.value) {
-    tl.to(logoRef.value, {
-      opacity: 1,
-      duration: 0.1, // Almost instant to prevent flicker after loader text vanishes
-      ease: 'power2.out'
-    }, 0)
-  }
+  try {
+    const { gsap, ScrollTrigger } = await loadGsap()
+    const tl = gsap.timeline()
+    
+    // Fade in logo (instant or very fast to match loader exit)
+    if (logoRef.value) {
+      tl.to(logoRef.value, {
+        opacity: 1,
+        duration: 0.1, // Almost instant to prevent flicker after loader text vanishes
+        ease: 'power2.out'
+      }, 0)
+    }
 
-  // Animate nav links
-  if (navRef.value) {
-    tl.to(navRef.value.children, {
-      y: 0,
-      opacity: 1,
-      stagger: 0.1,
-      duration: 0.8,
-      ease: 'power3.out'
-    }, 0.2)
-  }
+    // Animate nav links
+    if (navRef.value) {
+      tl.to(navRef.value.children, {
+        y: 0,
+        opacity: 1,
+        stagger: 0.1,
+        duration: 0.8,
+        ease: 'power3.out'
+      }, 0.2)
+    }
 
-  // Animate quote
-  if (quoteRef.value) {
-    tl.fromTo(quoteRef.value, 
-      { y: -20, opacity: 0 },
-      { y: 0, opacity: 1, duration: 1, ease: 'power3.out' },
-      0.4
-    )
-  }
+    // Animate quote
+    if (quoteRef.value) {
+      tl.fromTo(quoteRef.value, 
+        { y: -20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1, ease: 'power3.out' },
+        0.4
+      )
+    }
 
-  // Animate main content sections
-  if (mainRef.value) {
-    tl.to(mainRef.value, {
-      y: 0,
-      opacity: 1,
-      duration: 1,
-      ease: 'power3.out',
-      onComplete: () => {
-        if (mainRef.value) {
-          gsap.set(mainRef.value, { clearProps: 'transform' })
+    // Animate main content sections
+    if (mainRef.value) {
+      tl.to(mainRef.value, {
+        y: 0,
+        opacity: 1,
+        duration: 1,
+        ease: 'power3.out',
+        onComplete: () => {
+          if (mainRef.value) {
+            gsap.set(mainRef.value, { clearProps: 'transform' })
+          }
+          ScrollTrigger.refresh()
         }
-        ScrollTrigger.refresh()
-      }
-    }, 0.4)
+      }, 0.4)
+    }
+  } catch {
+    if (logoRef.value) logoRef.value.style.opacity = '1'
+    if (navRef.value) {
+      Array.from(navRef.value.children).forEach((node) => {
+        const el = node as HTMLElement
+        el.style.opacity = '1'
+        el.style.transform = 'none'
+      })
+    }
+    if (quoteRef.value) quoteRef.value.style.opacity = '1'
+    if (mainRef.value) {
+      mainRef.value.style.opacity = '1'
+      mainRef.value.style.transform = 'none'
+    }
   }
 }
 

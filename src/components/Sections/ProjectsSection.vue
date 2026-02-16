@@ -8,11 +8,15 @@ import { usePerformance } from '../../composables/usePerformance'
 
 // gsap.registerPlugin(ScrollTrigger)
 
+type MatchMediaLike = { add: (query: string, callback: () => void) => void; revert: () => void }
+type ScrollTriggerLike = { refresh: () => void }
+
 const { trackInteraction } = usePerformance()
 const sectionRef = ref<HTMLElement | null>(null)
 const containerRef = ref<HTMLDivElement | null>(null)
 // let mm: gsap.MatchMedia
-let mm: any // 使用 any 规避类型检查，因为 gsap 是动态加载的
+let mm: MatchMediaLike | null = null
+let scrollTrigger: ScrollTriggerLike | null = null
 
 const isMobile = ref(false)
 const activeCardIndex = ref<number | null>(null)
@@ -49,6 +53,7 @@ onMounted(async () => {
     const gsap = (await import('gsap')).gsap
     const ScrollTrigger = (await import('gsap/ScrollTrigger')).ScrollTrigger
     gsap.registerPlugin(ScrollTrigger)
+    scrollTrigger = ScrollTrigger
 
     mm.add("(min-width: 768px)", () => {
       // 0. 获取元素并检查
@@ -93,7 +98,7 @@ onUnmounted(() => {
   // 严格清理：撤销所有媒体查询相关的动画和 ScrollTrigger
   mm?.revert()
   // 额外清理：确保 ScrollTrigger 刷新，避免幽灵触发器
-  ScrollTrigger.refresh()
+  scrollTrigger?.refresh()
 })
 </script>
 

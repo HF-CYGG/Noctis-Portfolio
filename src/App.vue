@@ -5,6 +5,8 @@ import LoadingScreen from './components/UI/LoadingScreen.vue'
 import Lenis from 'lenis'
 import { usePerformance } from './composables/usePerformance'
 
+type IdleCallback = (callback: IdleRequestCallback, options?: IdleRequestOptions) => number
+
 // 1. 按需异步加载 3D 核心组件
 // 只有在满足 3D 渲染条件时才会请求 Tres 相关 chunk
 const TresCanvas = defineAsyncComponent(() => 
@@ -19,6 +21,7 @@ const isEntranceTriggered = ref(false)
 const overlayRef = ref<InstanceType<typeof OverlayInterface> | null>(null)
 const has3DError = ref(false) // 3D 渲染错误状态
 const shouldLoad3D = ref(false) // 控制 3D 何时开始加载
+const loadingFallbackTimer = ref<number | null>(null)
 
 // 全局错误捕获，防止 3D 崩溃导致白屏
 function on3DError(err: unknown) {
@@ -49,11 +52,23 @@ onMounted(() => {
   // The LoadingScreen will handle the minimum display time
   isAppLoaded.value = true
 
+  if (loadingFallbackTimer.value) {
+    clearTimeout(loadingFallbackTimer.value)
+  }
+  loadingFallbackTimer.value = window.setTimeout(() => {
+    if (showLoading.value) {
+      showLoading.value = false
+      nextTick(() => {
+        overlayRef.value?.playEntrance()
+      })
+    }
+  }, 6000)
+
   // 2. 延迟加载 3D 资源
   // 优先保证 UI 主线程流畅，使用 requestIdleCallback 在空闲时加载 3D
   // 如果浏览器不支持 requestIdleCallback，则降级为 2秒后加载
   if (shouldEnable3D.value) {
-    const idleCallback = (window as any).requestIdleCallback || ((cb: Function) => setTimeout(cb, 2000))
+    const idleCallback: IdleCallback = window.requestIdleCallback?.bind(window) ?? ((callback) => window.setTimeout(() => callback({ didTimeout: false, timeRemaining: () => 0 }), 2000))
     idleCallback(() => {
       shouldLoad3D.value = true
     })
@@ -71,6 +86,9 @@ function onEntranceTriggered() {
 
 function onLoadingFinished() {
   showLoading.value = false
+  if (loadingFallbackTimer.value) {
+    clearTimeout(loadingFallbackTimer.value)
+  }
   // Trigger entrance animation after loading screen is removed
   nextTick(() => {
     overlayRef.value?.playEntrance()
