@@ -38,7 +38,7 @@ const trackSocialClick = (platform: string) => {
     <div class="container mx-auto px-6 max-w-4xl text-center">
       <h2 class="text-3xl md:text-5xl font-bold mb-8 tracking-tight">LET'S BUILD SOMETHING</h2>
       <p class="text-gray-400 mb-12 max-w-2xl mx-auto">
-        无论是新手求教，还是技术交流，我随时欢迎。
+        ”写代码就像写日记，都是在和未来的自己对话“
       </p>
       
       <div class="flex flex-col md:flex-row items-center justify-center gap-6 mb-16">
