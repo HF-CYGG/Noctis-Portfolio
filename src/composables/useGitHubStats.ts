@@ -20,13 +20,15 @@ const processQueue = () => {
 /**
  * GitHub 统计信息组合式函数
  * @param repoUrl GitHub 仓库 URL
+ * @param immediate 是否立即加载（默认为 true，如果为 false 则需要手动调用 fetchStats）
  */
-export function useGitHubStats(repoUrl: string) {
+export function useGitHubStats(repoUrl: string, immediate = true) {
   const loading = ref(true)
   const error = ref(false)
   const latestCommit = ref<CommitInfo | null>(null)
   const commitActivity = ref<number[]>([])
   const totalCommits = ref<number | string>('-')
+  const isLoaded = ref(false)
 
   const loadFromCache = (repoPath: string): boolean => {
     try {
@@ -142,6 +144,9 @@ export function useGitHubStats(repoUrl: string) {
   }
 
   const fetchStats = async () => {
+    if (isLoaded.value) return // 避免重复加载
+    isLoaded.value = true
+    
     const repoPath = getRepoPath(repoUrl)
     if (!repoPath) {
       error.value = true
@@ -163,13 +168,18 @@ export function useGitHubStats(repoUrl: string) {
     }
   }
 
-  onMounted(fetchStats)
+  onMounted(() => {
+    if (immediate) {
+      fetchStats()
+    }
+  })
 
   return {
     loading,
     error,
     latestCommit,
     commitActivity,
-    totalCommits
+    totalCommits,
+    fetchStats // 暴露手动触发方法
   }
 }

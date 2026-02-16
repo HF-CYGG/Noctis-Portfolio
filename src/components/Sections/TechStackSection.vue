@@ -58,17 +58,42 @@ const handleMouseLeave = () => {
   relatedProjects.value = []
 }
 
-// 移动端交互
-const handleTouch = (event: Event, techName: string) => {
-  // 阻止默认行为，防止同时触发点击
-  // event.preventDefault() 
+// 移动端交互与键盘支持
+const handleInteraction = (event: Event, techName: string) => {
+  // 获取触发元素
+  const target = event.currentTarget as HTMLElement
   
-  if (isMobile.value) {
-    handleMouseEnter(event as MouseEvent, techName)
-    // 3秒后自动隐藏
-    setTimeout(() => {
-      handleMouseLeave()
-    }, 3000)
+  // 如果是键盘事件，且不是 Enter 或 Space，则忽略
+  if (event instanceof KeyboardEvent) {
+    if (event.key !== 'Enter' && event.key !== ' ') return
+    event.preventDefault() // 防止滚动
+  }
+
+  const tags = techMap[techName] || []
+  if (tags.length === 0) return
+
+  // 查找包含相关标签的项目
+  const matching = projects
+    .filter(p => p.tags.some(t => tags.some(tag => t.toLowerCase().includes(tag.toLowerCase()))))
+    .map(p => p.title)
+
+  if (matching.length > 0) {
+    relatedProjects.value = matching
+    const rect = target.getBoundingClientRect()
+    
+    // 设置提示框位置在元素上方居中
+    tooltipPosition.value = {
+      x: rect.left + rect.width / 2,
+      y: rect.top - 10
+    }
+    showTooltip.value = true
+
+    // 移动端或键盘触发，3秒后自动隐藏
+    if (isMobile.value || event instanceof KeyboardEvent) {
+      setTimeout(() => {
+        handleMouseLeave()
+      }, 3000)
+    }
   }
 }
 
@@ -117,26 +142,38 @@ onUnmounted(() => {
       <div class="tech-category space-y-4">
         <h3 class="text-sm font-mono text-noctis-accent uppercase tracking-wider mb-6">前端与移动端</h3>
         <div 
-          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
+          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-noctis-accent/50"
+          tabindex="0"
+          role="button"
+          :aria-label="`查看使用 Android (Kotlin) 的相关项目`"
           @mouseenter="handleMouseEnter($event, 'Android (Kotlin)')"
           @mouseleave="handleMouseLeave"
-          @click="handleTouch($event, 'Android (Kotlin)')"
+          @click="handleInteraction($event, 'Android (Kotlin)')"
+          @keydown="handleInteraction($event, 'Android (Kotlin)')"
         >
           <span class="font-bold">Android (Kotlin)</span>
         </div>
         <div 
-          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
+          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-noctis-accent/50"
+          tabindex="0"
+          role="button"
+          :aria-label="`查看使用 TypeScript/JS 的相关项目`"
           @mouseenter="handleMouseEnter($event, 'TypeScript/JS')"
           @mouseleave="handleMouseLeave"
-          @click="handleTouch($event, 'TypeScript/JS')"
+          @click="handleInteraction($event, 'TypeScript/JS')"
+          @keydown="handleInteraction($event, 'TypeScript/JS')"
         >
           <span class="font-bold">TypeScript/JS</span>
         </div>
         <div 
-          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
+          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-noctis-accent/50"
+          tabindex="0"
+          role="button"
+          :aria-label="`查看使用 Vue 3 的相关项目`"
           @mouseenter="handleMouseEnter($event, 'Vue 3')"
           @mouseleave="handleMouseLeave"
-          @click="handleTouch($event, 'Vue 3')"
+          @click="handleInteraction($event, 'Vue 3')"
+          @keydown="handleInteraction($event, 'Vue 3')"
         >
           <span class="font-bold">Vue 3</span>
         </div>
@@ -146,34 +183,50 @@ onUnmounted(() => {
       <div class="tech-category space-y-4">
         <h3 class="text-sm font-mono text-noctis-accent uppercase tracking-wider mb-6">后端开发</h3>
         <div 
-          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
+          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-noctis-accent/50"
+          tabindex="0"
+          role="button"
+          :aria-label="`查看使用 Python 的相关项目`"
           @mouseenter="handleMouseEnter($event, 'Python')"
           @mouseleave="handleMouseLeave"
-          @click="handleTouch($event, 'Python')"
+          @click="handleInteraction($event, 'Python')"
+          @keydown="handleInteraction($event, 'Python')"
         >
           <span class="font-bold">Python</span>
         </div>
         <div 
-          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
+          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-noctis-accent/50"
+          tabindex="0"
+          role="button"
+          :aria-label="`查看使用 Java 的相关项目`"
           @mouseenter="handleMouseEnter($event, 'Java')"
           @mouseleave="handleMouseLeave"
-          @click="handleTouch($event, 'Java')"
+          @click="handleInteraction($event, 'Java')"
+          @keydown="handleInteraction($event, 'Java')"
         >
           <span class="font-bold">Java</span>
         </div>
         <div 
-          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
+          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-noctis-accent/50"
+          tabindex="0"
+          role="button"
+          :aria-label="`查看使用 Rust (探索中) 的相关项目`"
           @mouseenter="handleMouseEnter($event, 'Rust (探索中)')"
           @mouseleave="handleMouseLeave"
-          @click="handleTouch($event, 'Rust (探索中)')"
+          @click="handleInteraction($event, 'Rust (探索中)')"
+          @keydown="handleInteraction($event, 'Rust (探索中)')"
         >
           <span class="font-bold">Rust (探索中)</span>
         </div>
         <div 
-          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
+          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-noctis-accent/50"
+          tabindex="0"
+          role="button"
+          :aria-label="`查看使用 Go (探索中) 的相关项目`"
           @mouseenter="handleMouseEnter($event, 'Go (探索中)')"
           @mouseleave="handleMouseLeave"
-          @click="handleTouch($event, 'Go (探索中)')"
+          @click="handleInteraction($event, 'Go (探索中)')"
+          @keydown="handleInteraction($event, 'Go (探索中)')"
         >
           <span class="font-bold">Go (探索中)</span>
         </div>
@@ -183,26 +236,38 @@ onUnmounted(() => {
       <div class="tech-category space-y-4">
         <h3 class="text-sm font-mono text-noctis-accent uppercase tracking-wider mb-6">基础设施与工具</h3>
         <div 
-          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
+          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-noctis-accent/50"
+          tabindex="0"
+          role="button"
+          :aria-label="`查看使用 Docker 的相关项目`"
           @mouseenter="handleMouseEnter($event, 'Docker')"
           @mouseleave="handleMouseLeave"
-          @click="handleTouch($event, 'Docker')"
+          @click="handleInteraction($event, 'Docker')"
+          @keydown="handleInteraction($event, 'Docker')"
         >
           <span class="font-bold">Docker</span>
         </div>
         <div 
-          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
+          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-noctis-accent/50"
+          tabindex="0"
+          role="button"
+          :aria-label="`查看使用 Linux 的相关项目`"
           @mouseenter="handleMouseEnter($event, 'Linux')"
           @mouseleave="handleMouseLeave"
-          @click="handleTouch($event, 'Linux')"
+          @click="handleInteraction($event, 'Linux')"
+          @keydown="handleInteraction($event, 'Linux')"
         >
           <span class="font-bold">Linux</span>
         </div>
         <div 
-          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-default"
+          class="tech-item flex items-center gap-3 p-3 border border-white/10 bg-white/5 rounded-lg backdrop-blur-sm hover:border-noctis-accent/50 hover:bg-white/10 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-noctis-accent/50"
+          tabindex="0"
+          role="button"
+          :aria-label="`查看使用 Git 的相关项目`"
           @mouseenter="handleMouseEnter($event, 'Git')"
           @mouseleave="handleMouseLeave"
-          @click="handleTouch($event, 'Git')"
+          @click="handleInteraction($event, 'Git')"
+          @keydown="handleInteraction($event, 'Git')"
         >
           <span class="font-bold">Git</span>
         </div>
